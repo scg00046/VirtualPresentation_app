@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!--https://codigofacilito.com/articulos/android-splash -->
+    <item android:drawable="@drawable/background"/>
+    <item>
+        <!--https://www.it-swarm.dev/es/android/android-tamano-de-imagen-de-mapa-de-bits-en-xml/1046272179/ -->
+        <bitmap
+            android:gravity="center"
+            android:src="@mipmap/ic_launcher"
+            android:mipMap="true"/>
+    </item>
+
+</layer-list>
