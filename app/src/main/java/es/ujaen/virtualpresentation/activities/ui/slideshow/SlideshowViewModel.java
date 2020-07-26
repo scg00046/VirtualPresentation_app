@@ -1,4 +1,4 @@
-package es.ujaen.virtualpresentation.ui.slideshow;
+package es.ujaen.virtualpresentation.activities.ui.slideshow;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;

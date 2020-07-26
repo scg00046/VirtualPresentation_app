@@ -4,8 +4,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/fragment_home"
     android:orientation="vertical"
-    tools:context=".ui.home.HomeFragment">
+    tools:context=".activities.ui.home.HomeFragment">
 
     <TextView
         android:id="@+id/text_home"
@@ -36,7 +37,11 @@
     <Spinner
         android:id="@+id/presentationList"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="20dp"
+        android:focusable="auto"
+        android:spinnerMode="dialog" />
 
     <Button
         android:id="@+id/sendSession"

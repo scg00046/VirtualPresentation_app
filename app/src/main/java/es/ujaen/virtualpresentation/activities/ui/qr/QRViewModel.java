@@ -1,16 +1,16 @@
-package es.ujaen.virtualpresentation.ui.gallery;
+package es.ujaen.virtualpresentation.activities.ui.qr;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class GalleryViewModel extends ViewModel {
+public class QRViewModel extends ViewModel {
 
     private MutableLiveData<String> mText;
 
-    public GalleryViewModel() {
+    public QRViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is gallery fragment");
+        mText.setValue("This is qr fragment");
     }
 
     public LiveData<String> getText() {
