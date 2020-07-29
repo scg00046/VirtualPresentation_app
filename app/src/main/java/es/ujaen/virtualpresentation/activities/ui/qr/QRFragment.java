@@ -2,6 +2,7 @@ package es.ujaen.virtualpresentation.activities.ui.qr;
 
 import android.Manifest;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -30,6 +31,8 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 import es.ujaen.virtualpresentation.R;
+import es.ujaen.virtualpresentation.activities.MainActivity;
+import es.ujaen.virtualpresentation.activities.PresentationActivity;
 import es.ujaen.virtualpresentation.data.Preferences;
 import es.ujaen.virtualpresentation.data.Session;
 
@@ -142,14 +145,17 @@ public class QRFragment extends Fragment {
 
                         try {
                             JSONObject tokenJson = new JSONObject(token);
-                            Session sm = Session.sesionJSON(tokenJson);
+                            Session sm = Session.sesionJSON(tokenJson); //Sesión del QR
                             Log.i("QR_sesionRecived","Sesion:"+sm.getNombreSesion()+" Pres: "+sm.getPresentacion()+" User: "+sm.getNombreUsuario());
-                            Session sa = Preferences.obtenerSession(context,sm.getNombreSesion());
+                            Session sa = Preferences.obtenerSession(context,sm.getNombreSesion()); //Sesión almacenada
                             Log.i("QR_sesionSaved","Sesion:"+sa.getNombreSesion()+" Pres: "+sa.getPresentacion()+" User: "+sa.getNombreUsuario());
                             if (sm.getNombreUsuario().equals(sa.getNombreUsuario()) && sm.getPresentacion().equals(sa.getPresentacion())){
                                 Log.i("QR_Sesion", "Sesión correcta");
-                                Toast.makeText(context,"Sesión ok", Toast.LENGTH_LONG).show();
+                                Toast.makeText(getContext(),"Sesión ok", Toast.LENGTH_LONG).show();
                                 //TODO pasar a una nueva actividad
+                                Intent intent = new Intent(getContext(), PresentationActivity.class);
+                                //TODO pasar datos
+                                getContext().startActivity(intent);
                             }
 
                         } catch (JSONException e) {
