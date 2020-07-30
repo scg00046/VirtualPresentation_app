@@ -32,7 +32,7 @@
         android:inputType="text"
         android:paddingHorizontal="20dp"
         android:paddingVertical="12dp"
-        android:text="admin" />
+        android:text="nuevaSesion" />
 
     <Spinner
         android:id="@+id/presentationList"

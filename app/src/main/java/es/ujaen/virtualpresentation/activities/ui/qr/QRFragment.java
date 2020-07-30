@@ -1,6 +1,7 @@
 package es.ujaen.virtualpresentation.activities.ui.qr;
 
 import android.Manifest;
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -48,7 +49,8 @@ public class QRFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        Context context = QRFragment.super.getContext();
+        //Context context = QRFragment.super.getContext();
+        Context context = getContext();
         qrViewModel =
                 ViewModelProviders.of(this).get(QRViewModel.class);
         View root = inflater.inflate(R.layout.fragment_gallery, container, false);
@@ -67,13 +69,15 @@ public class QRFragment extends Fragment {
 
     public void initQR(final Context context) {
 
-        // creo el detector qr
+
+
+        // Detector de codigo QR
         BarcodeDetector barcodeDetector =
                 new BarcodeDetector.Builder(context)
                         .setBarcodeFormats(Barcode.ALL_FORMATS)
                         .build();
 
-        // creo la camara
+        // Abrir cámara
         cameraSource = new CameraSource
                 .Builder(context, barcodeDetector)
                 .setRequestedPreviewSize(1600, 1024)
@@ -126,8 +130,9 @@ public class QRFragment extends Fragment {
 
             @Override
             public void receiveDetections(Detector.Detections<Barcode> detections) {
+                boolean hecho = false;
                 final SparseArray<Barcode> barcodes = detections.getDetectedItems();
-
+                Toast.makeText(getActivity().getApplicationContext(),"INICIANDO QR", Toast.LENGTH_SHORT).show();
                 if (barcodes.size() > 0) {
 
                     // obtenemos el token
@@ -135,13 +140,11 @@ public class QRFragment extends Fragment {
 
                     // verificamos que el token anterior no se igual al actual
                     // esto es util para evitar multiples llamadas empleando el mismo token
-                    if (!token.equals(tokenanterior)) {
+                    if (!token.equals(tokenanterior) && !hecho) {
 
                         // guardamos el ultimo token proceado
                         tokenanterior = token;
                         Log.i("QR_Token", token);
-
-                        Toast.makeText(context, "- "+token, Toast.LENGTH_LONG).show(); //TODO revisar, no lo muestra
 
                         try {
                             JSONObject tokenJson = new JSONObject(token);
@@ -151,10 +154,11 @@ public class QRFragment extends Fragment {
                             Log.i("QR_sesionSaved","Sesion:"+sa.getNombreSesion()+" Pres: "+sa.getPresentacion()+" User: "+sa.getNombreUsuario());
                             if (sm.getNombreUsuario().equals(sa.getNombreUsuario()) && sm.getPresentacion().equals(sa.getPresentacion())){
                                 Log.i("QR_Sesion", "Sesión correcta");
-                                Toast.makeText(getContext(),"Sesión ok", Toast.LENGTH_LONG).show();
-                                //TODO pasar a una nueva actividad
+                                Toast.makeText(QRFragment.this.getContext(),"Sesión ok", Toast.LENGTH_LONG).show(); //TODO revisar, no lo muestra
+                                hecho = true;
+                                //TODO evitar que haga varias veces el intent
                                 Intent intent = new Intent(getContext(), PresentationActivity.class);
-                                //TODO pasar datos
+                                intent.putExtra("sesion",sm.getNombreSesion());
                                 getContext().startActivity(intent);
                             }
 

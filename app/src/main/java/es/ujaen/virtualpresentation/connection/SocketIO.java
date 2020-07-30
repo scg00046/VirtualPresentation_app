@@ -30,7 +30,7 @@ public class SocketIO extends Thread {
         //start();
         /*Log.i("SocketCrear","Creando del socket...");
         try {
-            socket = IO.socket("http://192.168.1.10:8080"); //TODO agregar a constantes
+            socket = IO.socket("http://192.168.1.10:8080");
 
             socket.on(Socket.EVENT_CONNECT, onConnect);
             socket.on(Socket.EVENT_DISCONNECT, onDisconnect);
@@ -48,17 +48,20 @@ public class SocketIO extends Thread {
     public synchronized void start() {
         super.start();
         Log.i("SocketCrear","Creando del socket...");
+        //IO.Options opts = new IO.Options();
+
         try {
-            socket = IO.socket("http://192.168.1.10:8080"); //TODO agregar a constantes
+            socket = IO.socket("http://192.168.1.10:8080"/*,opts*/); //TODO agregar a constantes
 
             socket.on(Socket.EVENT_CONNECT, onConnect);
             socket.on(Socket.EVENT_DISCONNECT, onDisconnect);
             socket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
             socket.on(sesion.getNombreSesion(), newMessageListner);
             socket.connect();    //Connect socket to server
-            Thread.sleep(5000);
-            Log.i("SocketCrear","Socket creado");
+            Thread.sleep(2000);
+            Log.i("SocketCrear","Socket creado, usuario: "+usuario.getNombreusuario()+", sesion: "+sesion.getNombreSesion());
             sendMessage("OK");
+            Log.i("SocketCrear","Socket abierto (Ok enviado)");
         } catch (URISyntaxException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -96,6 +99,7 @@ public class SocketIO extends Thread {
         }
     };
 
+    //TODO conectarse unicamente a la sesión creada (room definida)
     private Emitter.Listener onConnect = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
@@ -110,7 +114,7 @@ public class SocketIO extends Thread {
         }
     };
 
-    public void sendMessage(/*View v*/String texto) {
+    public void sendMessage(/*View v*/String texto) { //TODO realizar comprobación para que no vuelva a enviar varias veces
         Log.i("SocketPreSend","Enviando mensaje ...");
         JSONObject mensaje = new JSONObject();
         try {
@@ -118,6 +122,7 @@ public class SocketIO extends Thread {
             mensaje.put("mensaje", texto);
             if (socket.connected()) {
                 Log.i("SocketSend","Envia mensaje");
+
                 socket.emit(sesion.getNombreSesion(),mensaje);
             }
         } catch (JSONException e) {
