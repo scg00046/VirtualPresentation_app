@@ -2,4 +2,18 @@
 <resources>
     <string name="app_name">Presentación Virtual</string>
     <string name="menu_qr">QR</string>
+    <string name="login">Acceso</string>
+    <string name="login_edit_user">Usuario</string>
+    <string name="login_edit_pass">Contraseña</string>
+    <string name="login_remember">Recuérdame</string>
+    <string name="login_button">Entrar</string>
+    <string name="sesion_edit_name">Nombre de la sesión</string>
+    <string name="session_button">Crear sesión</string>
+    <string name="present_btn_forward">Avanzar</string>
+    <string name="present_btn_backward">Retroceder</string>
+    <string name="present_zoom_in">Zoom más</string>
+    <string name="present_zoom_out">Zoom menos</string>
+    <string name="present_btn_finish">Finalizar sesión</string>
+    <string name="menu_about">Acerca de</string>
+    <string name="action_settings">Ajustes</string>
 </resources>

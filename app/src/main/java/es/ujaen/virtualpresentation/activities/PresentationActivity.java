@@ -3,6 +3,7 @@ package es.ujaen.virtualpresentation.activities;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -104,8 +105,11 @@ public class PresentationActivity extends AppCompatActivity {
                     Thread hilo = socketIO;
                     hilo.start();
                     fin.setText("Finalizar sesión");
+                    //fin.setBackgroundColor(Color.RED);
                     finsesion = true;
                 } else {
+                    //fin.setText("Empezar sesión");
+                    //fin.setBackgroundColor(Color.parseColor("#4CAF50"));
                     onDestroy();
                     finsesion = false;
                 }
@@ -119,6 +123,7 @@ public class PresentationActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
         //TODO recoger la página por la que va
+        socketIO.sendMessage("FIN");
         socketIO.interrupt();
         //socketIO.stopSesion();
     }

@@ -1,11 +1,13 @@
 package es.ujaen.virtualpresentation.activities.ui.home;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -38,13 +40,13 @@ public class HomeFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        Log.i("HomeFragment", "arrancando Fragmento Home");
+        Log.i("HomeFragment", "Iniciando Fragmento Home");
         Context context = HomeFragment.super.getContext();
         Usuario user = Preferences.obtenerUsuario(context);
         final Connection con = new Connection(context, user);
         fm = getActivity().getSupportFragmentManager();
 
-        List<String> present = new ArrayList<>();// = con.user.getLista();
+        List<String> def_spinner = new ArrayList<>();// = con.user.getLista();
         Log.i("HomeFragment_user", user.getNombreusuario()+" - "+user.getNombre());
         //Log.i("HomeFragment_list", present.toString());
 
@@ -57,11 +59,12 @@ public class HomeFragment extends Fragment {
         presList = root.findViewById(R.id.presentationList);
         enviaSesion = root.findViewById(R.id.sendSession);
 
-
-        present.add("No hay presentaciones para " + user.getNombreusuario());
+        // TODO si no hay presentaciones mostrar un texto en lugar del spinner
+        def_spinner.add("No hay presentaciones para " + user.getNombreusuario());
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(root.getContext().getApplicationContext(),
-                android.R.layout.simple_spinner_dropdown_item, present);
+                android.R.layout.simple_spinner_dropdown_item, def_spinner);
         presList.setAdapter(adapter);
+        presList.setBackgroundColor(Color.parseColor("#FFEFEE"));
 
 
         //final Connection con = new Connection(root.getContext().getApplicationContext(), user);

@@ -17,7 +17,7 @@
         android:layout_marginTop="30dp"
         android:layout_marginRight="20dp"
         android:background="@drawable/btn_round"
-        android:text="+" />
+        android:text="@string/present_btn_forward" />
 
     <Button
         android:id="@+id/bt_menos"
@@ -27,7 +27,7 @@
         android:layout_marginTop="30dp"
         android:layout_marginRight="20dp"
         android:background="@drawable/btn_round"
-        android:text="-" />
+        android:text="@string/present_btn_backward" />
 
     <EditText
         android:id="@+id/text_page"
@@ -47,7 +47,7 @@
         android:layout_marginTop="30dp"
         android:layout_marginRight="20dp"
         android:background="@drawable/btn_round"
-        android:text="Zoom +" />
+        android:text="@string/present_zoom_in" />
 
     <Button
         android:id="@+id/bt_zoommenos"
@@ -57,7 +57,7 @@
         android:layout_marginTop="30dp"
         android:layout_marginRight="20dp"
         android:background="@drawable/btn_round"
-        android:text="Zoom -" />
+        android:text="@string/present_zoom_out" />
 
     <Button
         android:id="@+id/bt_finsesion"
@@ -67,5 +67,6 @@
         android:layout_marginTop="30dp"
         android:layout_marginRight="20dp"
         android:background="@drawable/btn_round"
-        android:text="Empezar sesión" />
+        android:backgroundTint="#4CAF50"
+        android:text="@string/present_btn_finish" />
 </LinearLayout>

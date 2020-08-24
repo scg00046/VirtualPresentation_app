@@ -16,6 +16,7 @@ public class Preferences {
     public static void saveCredentials(Context context, Usuario u){
         SharedPreferences sp = context.getSharedPreferences("default",Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
+        editor.putInt("id",u.getId());
         editor.putString("nombreusuario",u.getNombreusuario());
         editor.putString("nombre",u.getNombre());
         editor.putString("apellidos",u.getApellidos());
@@ -30,10 +31,11 @@ public class Preferences {
      */
     public static Usuario obtenerUsuario(Context context){
         SharedPreferences sp = context.getSharedPreferences("default",Context.MODE_PRIVATE);
+        int id = sp.getInt("id",0);
         String usuario = sp.getString("nombreusuario", "");
         String nombre = sp.getString("nombre", "");
         String apellidos = sp.getString("apellidos", "");
-        Usuario user = new Usuario(usuario,nombre,apellidos);
+        Usuario user = new Usuario(id, usuario, nombre, apellidos);
         return user;
     }
 

@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 
+import es.ujaen.virtualpresentation.data.Constant;
 import es.ujaen.virtualpresentation.data.Session;
 import es.ujaen.virtualpresentation.data.Usuario;
 import io.socket.client.IO;
@@ -51,14 +52,14 @@ public class SocketIO extends Thread {
         //IO.Options opts = new IO.Options();
 
         try {
-            socket = IO.socket("http://192.168.1.10:8080"/*,opts*/); //TODO agregar a constantes
+            socket = IO.socket(Constant.SERVER/*,opts*/);
 
             socket.on(Socket.EVENT_CONNECT, onConnect);
             socket.on(Socket.EVENT_DISCONNECT, onDisconnect);
             socket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
             socket.on(sesion.getNombreSesion(), newMessageListner);
             socket.connect();    //Connect socket to server
-            Thread.sleep(2000);
+            Thread.sleep(500);
             Log.i("SocketCrear","Socket creado, usuario: "+usuario.getNombreusuario()+", sesion: "+sesion.getNombreSesion());
             sendMessage("OK");
             Log.i("SocketCrear","Socket abierto (Ok enviado)");
@@ -78,7 +79,7 @@ public class SocketIO extends Thread {
     private Emitter.Listener onConnectError = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            Log.d("TAG", "onConnectError: " + args);
+            Log.e("SocketConnectError", "onConnectError: " + args);
         }
     };
 
@@ -90,7 +91,7 @@ public class SocketIO extends Thread {
                     @Override
                     public void run() {
                         try {
-                            Log.d("TAG", "onDisconnect: " + args);
+                            Log.d("SocketDisconnect", "onDisconnect: " + args);
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -103,14 +104,14 @@ public class SocketIO extends Thread {
     private Emitter.Listener onConnect = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            Log.d("TAG", "onConnect: " + args);
+            Log.d("SocketConnect", "onConnect: " + args);
         }
     };
 
     private Emitter.Listener newMessageListner = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            Log.d("TAG", "newMessageListner: " + args);
+            Log.d("SocketNewMessage", "newMessageListner: " + args);
         }
     };
 

@@ -1,4 +1,4 @@
-package es.ujaen.virtualpresentation.activities.ui.slideshow;
+package es.ujaen.virtualpresentation.activities.ui.about;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -14,17 +14,17 @@ import androidx.lifecycle.ViewModelProviders;
 
 import es.ujaen.virtualpresentation.R;
 
-public class SlideshowFragment extends Fragment {
+public class AboutFragment extends Fragment {
 
-    private SlideshowViewModel slideshowViewModel;
+    private AboutViewModel aboutViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        slideshowViewModel =
-                ViewModelProviders.of(this).get(SlideshowViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_slideshow, container, false);
-        final TextView textView = root.findViewById(R.id.text_slideshow);
-        slideshowViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
+        aboutViewModel =
+                ViewModelProviders.of(this).get(AboutViewModel.class);
+        View root = inflater.inflate(R.layout.fragment_about, container, false);
+        final TextView textView = root.findViewById(R.id.text_about);
+        aboutViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
             public void onChanged(@Nullable String s) {
                 textView.setText(s);

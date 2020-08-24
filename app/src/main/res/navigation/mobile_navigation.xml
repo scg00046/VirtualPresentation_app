@@ -12,14 +12,20 @@
         tools:layout="@layout/fragment_home" />
 
     <fragment
-        android:id="@+id/nav_gallery"
+        android:id="@+id/nav_qr"
         android:name="es.ujaen.virtualpresentation.activities.ui.qr.QRFragment"
-        android:label="@string/menu_gallery"
-        tools:layout="@layout/fragment_gallery" />
+        android:label="@string/menu_qr"
+        tools:layout="@layout/fragment_qr" />
 
     <fragment
-        android:id="@+id/nav_slideshow"
-        android:name="es.ujaen.virtualpresentation.activities.ui.slideshow.SlideshowFragment"
-        android:label="@string/menu_slideshow"
-        tools:layout="@layout/fragment_slideshow" />
+        android:id="@+id/nav_upload"
+        android:name="es.ujaen.virtualpresentation.activities.ui.uploadfile.UploadFileFragment"
+        android:label="@string/menu_upload"
+        tools:layout="@layout/fragment_upload" />
+
+    <fragment
+        android:id="@+id/nav_about"
+        android:name="es.ujaen.virtualpresentation.activities.ui.about.AboutFragment"
+        android:label="@string/menu_about"
+        tools:layout="@layout/fragment_about" />
 </navigation>

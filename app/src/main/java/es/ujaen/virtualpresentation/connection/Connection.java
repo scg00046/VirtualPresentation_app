@@ -3,6 +3,7 @@ package es.ujaen.virtualpresentation.connection;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -22,6 +23,7 @@ import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.math.BigInteger;
 import java.security.MessageDigest;
@@ -31,6 +33,7 @@ import java.util.Map;
 
 import es.ujaen.virtualpresentation.activities.MainActivity;
 import es.ujaen.virtualpresentation.R;
+import es.ujaen.virtualpresentation.data.Constant;
 import es.ujaen.virtualpresentation.data.Preferences;
 import es.ujaen.virtualpresentation.data.Presentations;
 import es.ujaen.virtualpresentation.data.Session;
@@ -57,39 +60,58 @@ public class Connection {
     }
 
     public void login(final String usuario, final String password, final boolean guardar) {
+        final int[] statusCode = new int[1];
         StringRequest stringRequest;
-        stringRequest = new StringRequest(Request.Method.POST, URLusuario,
+        stringRequest = new StringRequest(Request.Method.POST, Constant.URL_LOGIN,
                 new Response.Listener<String>() {
 
                     @Override
-                    public void onResponse(String response) { //TODO recoger codigos de respuesta http
-                        // En este apartado se programa lo que deseamos hacer en caso de no haber errores
-                        if (response.startsWith("ERROR 1")) {
-                            Toast.makeText(context, "Se deben de llenar todos los campos.", Toast.LENGTH_SHORT).show();
-                        } else if (response.startsWith("ERROR 2")) {
-                            Toast.makeText(context, "Usuario o contraseña incorrectos.", Toast.LENGTH_SHORT).show();
-                        } else if (response.startsWith("OK")) { //TODO recuperar objeto json
-                            Log.i("Login OK", "Se ha logeado correctamente. " + response);
-                            //String[] resultado = response.split(":");
-                            //resultado[1].split(",");
-                            Usuario u = new Usuario(response.split(":")[1]);
-                            if (guardar) {
-                                Preferences.saveCredentials(context, u);
-                            }
-                            //Toast.makeText(context, "Inicio de Sesion exitoso.", Toast.LENGTH_LONG).show();
-                            Toast.makeText(context, "Inicio OK" + response.split(":")[1], Toast.LENGTH_LONG).show();
-                            Intent intent = new Intent(context, MainActivity.class);
-                            context.startActivity(intent);
+                    public void onResponse(String response) {
+                        if (statusCode[0] == 200){
+                            Log.i("LoginCode", "Codigo Estado 200");
                         }
+                        Log.i("Login OK", "Se ha logeado correctamente. " + response);
+                        Usuario u = null;
+                        try {
+                            u = new Usuario(new JSONObject(response));
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                        if (guardar) {
+                            Preferences.saveCredentials(context, u);
+                        }
+                        Toast.makeText(context, "Autenticación correcta", Toast.LENGTH_LONG).show();
+                        Intent intent = new Intent(context, MainActivity.class);
+                        context.startActivity(intent);
 
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 // En caso de tener algun error en la obtencion de los datos
-                //Toast.makeText(getApplicationContext(), "ERROR AL INICIAR SESION", Toast.LENGTH_LONG).show();
-                Log.w("ConnectionError", "Error al iniciar sesión" + error);
-                Toast.makeText(context, "Error al iniciar sesión", Toast.LENGTH_LONG).show();
+                Log.e("ConnectionError", "Error al iniciar sesión" + error);
+                if (error.networkResponse != null){ //Conexion realizada pero con respuesta de error
+                    int statusCode = error.networkResponse.statusCode;
+                    Log.i("ConnectionError", "Codigo error http: "+error.networkResponse.statusCode);
+                    switch (statusCode){
+                        case 403:
+                            Toast.makeText(context, "Usuario y/o contraseñas incorrectos", Toast.LENGTH_SHORT).show();
+                            break;
+                        case 500:
+                            Toast.makeText(context, "Se ha producido un error en el servidor", Toast.LENGTH_SHORT).show();
+                            break;
+                        case 400:
+                            Toast.makeText(context, "No se han enviado datos al servidor", Toast.LENGTH_SHORT).show();
+                            break;
+                        default:
+                            Toast.makeText(context, "Error desconocido", Toast.LENGTH_SHORT).show();
+                            break;
+                    }
+                } else { //Error al realizar la conexión
+                    Log.i("ConnectionError", "No se puede conectar con el servidor");
+                    Toast.makeText(context, "No se puede conectar con el servidor", Toast.LENGTH_SHORT).show();
+                }
+
             }
         }) {
             @Override
@@ -134,6 +156,7 @@ public class Connection {
                         ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
                                 android.R.layout.simple_spinner_dropdown_item, user.getLista());
                         presList.setAdapter(adapter);
+                        presList.setBackgroundColor(Color.WHITE);
                         Log.i("GetPresentacionesList", "Tamaño lista: " + user.getLista().size());
                     }
                 }, new Response.ErrorListener() {

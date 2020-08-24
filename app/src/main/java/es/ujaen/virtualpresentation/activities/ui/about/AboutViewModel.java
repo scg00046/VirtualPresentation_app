@@ -1,16 +1,18 @@
-package es.ujaen.virtualpresentation.activities.ui.slideshow;
+package es.ujaen.virtualpresentation.activities.ui.about;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
-public class SlideshowViewModel extends ViewModel {
+import es.ujaen.virtualpresentation.R;
+
+public class AboutViewModel extends ViewModel {
 
     private MutableLiveData<String> mText;
 
-    public SlideshowViewModel() {
+    public AboutViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("This is slideshow fragment");
+        mText.setValue(String.valueOf(R.string.menu_about));
     }
 
     public LiveData<String> getText() {

@@ -1,7 +1,6 @@
 package es.ujaen.virtualpresentation.activities.ui.qr;
 
 import android.Manifest;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -19,6 +18,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.vision.CameraSource;
@@ -32,7 +32,6 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 import es.ujaen.virtualpresentation.R;
-import es.ujaen.virtualpresentation.activities.MainActivity;
 import es.ujaen.virtualpresentation.activities.PresentationActivity;
 import es.ujaen.virtualpresentation.data.Preferences;
 import es.ujaen.virtualpresentation.data.Session;
@@ -53,7 +52,7 @@ public class QRFragment extends Fragment {
         Context context = getContext();
         qrViewModel =
                 ViewModelProviders.of(this).get(QRViewModel.class);
-        View root = inflater.inflate(R.layout.fragment_gallery, container, false);
+        View root = inflater.inflate(R.layout.fragment_qr, container, false);
         /*final TextView textView = root.findViewById(R.id.text_gallery);
         galleryViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
@@ -80,8 +79,8 @@ public class QRFragment extends Fragment {
         // Abrir cámara
         cameraSource = new CameraSource
                 .Builder(context, barcodeDetector)
-                .setRequestedPreviewSize(1600, 1024)
-                .setAutoFocusEnabled(true) //you should add this feature
+                //.setRequestedPreviewSize(1600, 1024)
+                .setAutoFocusEnabled(true)
                 .build();
 
         // listener de ciclo de vida de la camara
@@ -89,20 +88,19 @@ public class QRFragment extends Fragment {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
 
-                // verifico si el usuario dio los permisos para la camara
+                // Verificar permisos
                 if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
-                        != PackageManager.PERMISSION_GRANTED) {
+                        != PackageManager.PERMISSION_GRANTED) { //Permisos necesarios
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        // verificamos la version de ANdroid que sea al menos la M para mostrar
-                        // el dialog de la solicitud de la camara
-                        if (shouldShowRequestPermissionRationale(
-                                Manifest.permission.CAMERA)) ;
-                        requestPermissions(new String[]{Manifest.permission.CAMERA},
-                                MY_PERMISSIONS_REQUEST_CAMERA);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) { //Versión mínima SDK 23
+                        if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
+                            //Solicitud de permisos
+                            requestPermissions(new String[]{Manifest.permission.CAMERA},
+                                    MY_PERMISSIONS_REQUEST_CAMERA);
+                        }
                     }
                     return;
-                } else {
+                } else { //Permisos concedidos
                     try {
                         cameraSource.start(cameraView.getHolder());
                     } catch (IOException ie) {

@@ -12,13 +12,23 @@ import java.util.Collections;
 import java.util.List;
 
 public class Usuario {
+
+    private int id;
     private String nombreusuario;
     private String nombre;
     private String apellidos;
     private List<Presentations> presentationsList;
     private List<String> lista;
 
-    public Usuario(String nombreusuario, String nombre, String apellidos) {
+    /**
+     * Constructor con parámetros
+     * @param id
+     * @param nombreusuario
+     * @param nombre
+     * @param apellidos
+     */
+    public Usuario(int id, String nombreusuario, String nombre, String apellidos) {
+        this.id = id;
         this.nombreusuario = nombreusuario;
         this.nombre = nombre;
         this.apellidos = apellidos;
@@ -26,16 +36,25 @@ public class Usuario {
         this.lista = new ArrayList<>();
     }
 
-    public Usuario(String user){
-        String[] atributo = user.split(",");
-        this.nombreusuario = atributo[0];
-        this.nombre = atributo[1];
-        this.apellidos = atributo[2];
+    /**
+     * Constructor Usuario a partir de un JSON recibido
+     * @param userJson
+     * @throws JSONException
+     */
+    public Usuario (JSONObject userJson) throws JSONException{
+        this.id = userJson.getInt("id");
+        this.nombreusuario = userJson.getString("nombreusuario");
+        this.nombre = userJson.getString("nombre");
+        this.apellidos = userJson.getString("apellidos");
         this.presentationsList = new ArrayList<>();
         this.lista = new ArrayList<>();
     }
 
     public Usuario() {
+    }
+
+    public int getId() {
+        return id;
     }
 
     public String getNombreusuario() {
@@ -74,7 +93,7 @@ public class Usuario {
         this.lista.add(nombre);
     }
 
-    public void presentationsJSON (JSONArray array) throws JSONException{//TODO quitar log (hay demasiados)
+    public void presentationsJSON (JSONArray array) throws JSONException{
         Log.i("Usuario_Json","Iniciando conversión");
             //JSONArray arrayJson = new JSONArray(cadenaJson);
             for (int i = 0; i < array.length(); i++){
