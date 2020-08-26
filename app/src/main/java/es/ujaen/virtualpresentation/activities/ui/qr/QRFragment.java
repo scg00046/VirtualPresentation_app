@@ -18,7 +18,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.ViewModelProviders;
 
 import com.google.android.gms.vision.CameraSource;
@@ -42,14 +41,15 @@ public class QRFragment extends Fragment {
 
     private CameraSource cameraSource;
     private SurfaceView cameraView;
-    private final int MY_PERMISSIONS_REQUEST_CAMERA = 1;
+
+    private final int PERMISSIONS_REQUEST_CAMERA = 1;
     private String token = "";
     private String tokenanterior = "";
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        //Context context = QRFragment.super.getContext();
-        Context context = getContext();
+        Context context = QRFragment.super.getContext();
+        //Context context = getContext();
         qrViewModel =
                 ViewModelProviders.of(this).get(QRViewModel.class);
         View root = inflater.inflate(R.layout.fragment_qr, container, false);
@@ -62,24 +62,21 @@ public class QRFragment extends Fragment {
         });*/
         cameraView = (SurfaceView) root.findViewById(R.id.camera_view);
         initQR(context);
-
         return root;
     }
 
     public void initQR(final Context context) {
-
-
-
         // Detector de codigo QR
         BarcodeDetector barcodeDetector =
                 new BarcodeDetector.Builder(context)
-                        .setBarcodeFormats(Barcode.ALL_FORMATS)
+                        .setBarcodeFormats(Barcode.QR_CODE)
+                        //.setBarcodeFormats(Barcode.ALL_FORMATS)
                         .build();
 
         // Abrir cámara
         cameraSource = new CameraSource
                 .Builder(context, barcodeDetector)
-                //.setRequestedPreviewSize(1600, 1024)
+                .setRequestedPreviewSize(1600, 1024)
                 .setAutoFocusEnabled(true)
                 .build();
 
@@ -88,16 +85,15 @@ public class QRFragment extends Fragment {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
 
-                // Verificar permisos
+                //Verificar permisos
                 if (ActivityCompat.checkSelfPermission(context, Manifest.permission.CAMERA)
                         != PackageManager.PERMISSION_GRANTED) { //Permisos necesarios
 
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) { //Versión mínima SDK 23
-                        if (shouldShowRequestPermissionRationale(Manifest.permission.CAMERA)) {
-                            //Solicitud de permisos
-                            requestPermissions(new String[]{Manifest.permission.CAMERA},
-                                    MY_PERMISSIONS_REQUEST_CAMERA);
-                        }
+                    if (ActivityCompat.shouldShowRequestPermissionRationale(getActivity(),
+                            Manifest.permission.CAMERA)) {
+                        ActivityCompat.requestPermissions(getActivity(),
+                                new String[]{Manifest.permission.CAMERA},
+                                PERMISSIONS_REQUEST_CAMERA);
                     }
                     return;
                 } else { //Permisos concedidos
@@ -106,7 +102,7 @@ public class QRFragment extends Fragment {
                     } catch (IOException ie) {
                         Log.e("CamaraQR", ie.getMessage());
                     }
-                }
+                }//fin else permisos
             }
 
             @Override
@@ -148,7 +144,7 @@ public class QRFragment extends Fragment {
                             JSONObject tokenJson = new JSONObject(token);
                             Session sm = Session.sesionJSON(tokenJson); //Sesión del QR
                             Log.i("QR_sesionRecived","Sesion:"+sm.getNombreSesion()+" Pres: "+sm.getPresentacion()+" User: "+sm.getNombreUsuario());
-                            Session sa = Preferences.obtenerSession(context,sm.getNombreSesion()); //Sesión almacenada
+                            Session sa = Preferences.getSession(context,sm.getNombreSesion()); //Sesión almacenada
                             Log.i("QR_sesionSaved","Sesion:"+sa.getNombreSesion()+" Pres: "+sa.getPresentacion()+" User: "+sa.getNombreUsuario());
                             if (sm.getNombreUsuario().equals(sa.getNombreUsuario()) && sm.getPresentacion().equals(sa.getPresentacion())){
                                 Log.i("QR_Sesion", "Sesión correcta");
@@ -163,24 +159,6 @@ public class QRFragment extends Fragment {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        /*if (token.equals("OK")){
-                            Intent intent = new Intent(context, Websocket.class);
-                            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK); //Necesario para poder cambiar de actividad desde fuera de la actividad
-                            getApplicationContext().startActivity(intent);
-                        }*/
-                        /*if (URLUtil.isValidUrl(token)) {
-                            // si es una URL valida abre el navegador
-                            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(token));
-                            startActivity(browserIntent);
-                        } else {
-                            // comparte en otras apps
-                            Intent shareIntent = new Intent();
-                            shareIntent.setAction(Intent.ACTION_SEND);
-                            shareIntent.putExtra(Intent.EXTRA_TEXT, token);
-                            shareIntent.setType("text/plain");
-                            startActivity(shareIntent);
-                        }*/
-
                         new Thread(new Runnable() {
                             public void run() {
                                 try {
@@ -190,17 +168,14 @@ public class QRFragment extends Fragment {
                                         tokenanterior = "";
                                     }
                                 } catch (InterruptedException e) {
-                                    // TODO Auto-generated catch block
                                     Log.e("Error", "Waiting didnt work!!");
                                     e.printStackTrace();
                                 }
                             }
                         }).start();
-
-                    }
-                }
-            }
-        });
-
+                    } //Fin if comprobación tocken nuevo
+                } //Fin if tamaño de codigo >0
+            } //Fin receiveDetections
+        }); //Fin barcode.setProcessor
     }
 }

@@ -7,7 +7,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,7 +27,7 @@ import java.util.List;
 import es.ujaen.virtualpresentation.R;
 import es.ujaen.virtualpresentation.connection.Connection;
 import es.ujaen.virtualpresentation.data.Preferences;
-import es.ujaen.virtualpresentation.data.Usuario;
+import es.ujaen.virtualpresentation.data.User;
 
 public class HomeFragment extends Fragment {
 
@@ -42,7 +41,7 @@ public class HomeFragment extends Fragment {
                              ViewGroup container, Bundle savedInstanceState) {
         Log.i("HomeFragment", "Iniciando Fragmento Home");
         Context context = HomeFragment.super.getContext();
-        Usuario user = Preferences.obtenerUsuario(context);
+        User user = Preferences.getUser(context);
         final Connection con = new Connection(context, user);
         fm = getActivity().getSupportFragmentManager();
 
@@ -101,7 +100,7 @@ public class HomeFragment extends Fragment {
             public void onClick(View v) {
                 String sesion = session.getText().toString().trim();
                 String seleccionado = presList.getSelectedItem().toString();
-                con.crearSesion(sesion,seleccionado,root);
+                con.createSession(sesion,seleccionado,root);
                 Toast.makeText(root.getContext().getApplicationContext(), "Sesion: "+sesion+" - "+seleccionado, Toast.LENGTH_LONG).show();
                 //Toast.makeText(root.getContext().getApplicationContext(), "Rellena todos los campos", "Rellena todos los campos".length()).show();
             }

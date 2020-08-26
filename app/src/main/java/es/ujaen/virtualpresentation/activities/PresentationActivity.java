@@ -1,9 +1,10 @@
 package es.ujaen.virtualpresentation.activities;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
-import android.graphics.Color;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -15,7 +16,7 @@ import es.ujaen.virtualpresentation.R;
 import es.ujaen.virtualpresentation.connection.SocketIO;
 import es.ujaen.virtualpresentation.data.Preferences;
 import es.ujaen.virtualpresentation.data.Session;
-import es.ujaen.virtualpresentation.data.Usuario;
+import es.ujaen.virtualpresentation.data.User;
 
 public class PresentationActivity extends AppCompatActivity {
     private SocketIO socketIO;
@@ -31,16 +32,16 @@ public class PresentationActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //final boolean iniciosesion = true;
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_presentation);
 
         sesion = getIntent().getStringExtra("sesion");
         Log.i("PresentationActivity", "Iniciando actividad presentación, con sesión:"+sesion);
-        Context context = getApplicationContext();
-        final Usuario u = Preferences.obtenerUsuario(context);
-        final Session s = Preferences.obtenerSession(context, sesion);
+        //final Context context = getApplicationContext();
+        final Context context = this;
+        final User u = Preferences.getUser(context);
+        final Session s = Preferences.getSession(context, sesion);
 
         paginaMax = s.getPaginas();
 
@@ -100,24 +101,37 @@ public class PresentationActivity extends AppCompatActivity {
 
         fin.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                if (!finsesion) {
+            public void onClick(View v) { //TODO revisar y añadir "alert"
+                if (!finsesion) { //Iniciar sesión
                     Thread hilo = socketIO;
-                    hilo.start();
-                    fin.setText("Finalizar sesión");
+                    hilo.start(); //Activa la sesión
+                    fin.setText(R.string.present_btn_finish);
                     //fin.setBackgroundColor(Color.RED);
                     finsesion = true;
-                } else {
-                    //fin.setText("Empezar sesión");
+                } else { //Finalizar sesión
+                    fin.setText(R.string.present_btn_start);
                     //fin.setBackgroundColor(Color.parseColor("#4CAF50"));
-                    onDestroy();
-                    finsesion = false;
+                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                    builder.setTitle("¿Está seguro?");
+                    builder.setMessage("¿Desea finalizar la sesión?");
+
+                    builder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            Toast.makeText(context, "Sí", Toast.LENGTH_SHORT).show();
+                            socketIO.sendMessage("FIN");
+                            socketIO.interrupt();
+                            finsesion = false;
+                        }
+                    });
+                    builder.setNegativeButton("No", null);
+                    AlertDialog dialog = builder.create();
+                    dialog.show();
+
                 }
             }
         });
     }
-
-
 
     @Override
     protected void onDestroy() {

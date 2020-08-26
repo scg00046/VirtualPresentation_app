@@ -1,13 +1,14 @@
 package es.ujaen.virtualpresentation.connection;
 
 import android.content.Context;
-import android.graphics.Color;
+import android.content.res.Resources;
 import android.net.Uri;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import net.gotev.uploadservice.MultipartUploadRequest;
+import net.gotev.uploadservice.Placeholders;
 import net.gotev.uploadservice.ServerResponse;
 import net.gotev.uploadservice.UploadInfo;
 import net.gotev.uploadservice.UploadNotificationConfig;
@@ -15,29 +16,40 @@ import net.gotev.uploadservice.UploadStatusDelegate;
 
 import java.util.UUID;
 
+import es.ujaen.virtualpresentation.R;
 import es.ujaen.virtualpresentation.data.Constant;
+import es.ujaen.virtualpresentation.data.User;
 
 public class UploadFile {
 
     private Context context;
-
+    private User usuario;
     private TextView messageText;
 
-    public UploadFile(Context context/*, TextView messageText*/) {
+    public UploadFile(Context context, User usuario) {
         Log.d("UploadFile","Conexion creada");
         this.context = context;
+        this.usuario = usuario;
         //this.messageText = messageText;
     }
 
     public void subir(final Uri uriFile, final String filename){
+        Resources res = context.getResources();
+        UploadNotificationConfig upNotification = new UploadNotificationConfig();
+        upNotification.setTitle(res.getString(R.string.not_up_title))
+                .setCompletedMessage(res.getString(R.string.not_up_completed)+ Placeholders.UPLOAD_RATE + " (" + Placeholders.PROGRESS + ")")
+                .setInProgressMessage(res.getString(R.string.not_up_progress)+ Placeholders.ELAPSED_TIME)
+                .setErrorMessage(res.getString(R.string.not_up_error))
+                .setRingToneEnabled(false);
+
         try {
-            //filenameGaleria = getFilename();
             final String uploadId = UUID.randomUUID().toString();
-            new MultipartUploadRequest(context, uploadId, Constant.getUrlUser("admin")) //TODO obtener de forma automática
-                    //.addFileToUpload(uriFile.getPath(), "sampleFile")
+            new MultipartUploadRequest(context, uploadId, Constant.getUrlUser(usuario.getNombreusuario()))
                     .addFileToUpload(uriFile.getPath(), "presentacion", filename)
-                    //.addParameter("filename", filename)
-                    .setNotificationConfig(new UploadNotificationConfig())
+                    .addParameter("id", String.valueOf(usuario.getId()))
+                    .setNotificationConfig(upNotification)
+                    .setMethod("PUT")
+                    .setUtf8Charset()
                     .setMaxRetries(2)
                     .setDelegate(new UploadStatusDelegate() {
                         @Override
@@ -48,7 +60,8 @@ public class UploadFile {
                         public void onError(UploadInfo uploadInfo, Exception e) {
                             //messageText.setTextColor(Color.RED);
                             //messageText.setText("Error: "+e.getMessage());
-                            Log.i("UploadFile", "Error de subida: "+uploadId+"\nExcepción: "+e.getLocalizedMessage());
+                            Log.i("UploadFile", "Error de subida: "+uploadId+"\nExcepción: "+e.getLocalizedMessage()
+                                    +"\nError Mensaje"+e.getMessage());
                         }
                         @Override
                         public void onCompleted(UploadInfo uploadInfo, ServerResponse serverResponse) {
@@ -70,7 +83,4 @@ public class UploadFile {
             messageText.setText("Exception General: "+exc.getLocalizedMessage());*/
         }
     }
-
-
-
 }

@@ -1,8 +1,6 @@
 package es.ujaen.virtualpresentation.connection;
 
 import android.app.Activity;
-import android.os.AsyncTask;
-import android.os.Handler;
 import android.util.Log;
 
 import org.json.JSONException;
@@ -12,7 +10,7 @@ import java.net.URISyntaxException;
 
 import es.ujaen.virtualpresentation.data.Constant;
 import es.ujaen.virtualpresentation.data.Session;
-import es.ujaen.virtualpresentation.data.Usuario;
+import es.ujaen.virtualpresentation.data.User;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -22,9 +20,9 @@ public class SocketIO extends Thread {
     private Socket socket = null;
     private Activity activity;
     private Session sesion;
-    private Usuario usuario;
+    private User usuario;
 
-    public SocketIO(Activity activity, Usuario usuario, Session sesion) {
+    public SocketIO(Activity activity, User usuario, Session sesion) {
         this.activity = activity;
         this.usuario = usuario;
         this.sesion = sesion;

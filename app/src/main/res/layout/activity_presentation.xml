@@ -68,5 +68,5 @@
         android:layout_marginRight="20dp"
         android:background="@drawable/btn_round"
         android:backgroundTint="#4CAF50"
-        android:text="@string/present_btn_finish" />
+        android:text="@string/present_btn_start" />
 </LinearLayout>

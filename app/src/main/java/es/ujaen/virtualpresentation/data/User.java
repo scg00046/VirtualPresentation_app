@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class Usuario {
+public class User {
 
     private int id;
     private String nombreusuario;
@@ -27,7 +27,7 @@ public class Usuario {
      * @param nombre
      * @param apellidos
      */
-    public Usuario(int id, String nombreusuario, String nombre, String apellidos) {
+    public User(int id, String nombreusuario, String nombre, String apellidos) {
         this.id = id;
         this.nombreusuario = nombreusuario;
         this.nombre = nombre;
@@ -37,11 +37,11 @@ public class Usuario {
     }
 
     /**
-     * Constructor Usuario a partir de un JSON recibido
+     * Constructor User a partir de un JSON recibido
      * @param userJson
      * @throws JSONException
      */
-    public Usuario (JSONObject userJson) throws JSONException{
+    public User(JSONObject userJson) throws JSONException{
         this.id = userJson.getInt("id");
         this.nombreusuario = userJson.getString("nombreusuario");
         this.nombre = userJson.getString("nombre");
@@ -50,7 +50,7 @@ public class Usuario {
         this.lista = new ArrayList<>();
     }
 
-    public Usuario() {
+    public User() {
     }
 
     public int getId() {

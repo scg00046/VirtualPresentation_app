@@ -24,6 +24,12 @@
         tools:layout="@layout/fragment_upload" />
 
     <fragment
+        android:id="@+id/nav_delete"
+        android:name="es.ujaen.virtualpresentation.activities.ui.delete.DeleteFragment"
+        android:label="@string/menu_delete"
+        tools:layout="@layout/fragment_delete" />
+
+    <fragment
         android:id="@+id/nav_about"
         android:name="es.ujaen.virtualpresentation.activities.ui.about.AboutFragment"
         android:label="@string/menu_about"

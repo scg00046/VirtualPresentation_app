@@ -37,7 +37,7 @@ import es.ujaen.virtualpresentation.data.Constant;
 import es.ujaen.virtualpresentation.data.Preferences;
 import es.ujaen.virtualpresentation.data.Presentations;
 import es.ujaen.virtualpresentation.data.Session;
-import es.ujaen.virtualpresentation.data.Usuario;
+import es.ujaen.virtualpresentation.data.User;
 
 public class Connection {
 
@@ -46,40 +46,41 @@ public class Connection {
     private final String URLusuario = dominio + "usuario";
     private final String URLsesion = dominio + "session/";
     private Context context;
-    public Usuario user;
+    public User user;
 
     public Connection(Context context) {
         Log.d("Connection", "Conexion creada");
         this.context = context;
     }
 
-    public Connection(Context context, Usuario user) {
+    public Connection(Context context, User user) {
         Log.d("Connection", "Conexion creada");
         this.context = context;
         this.user = user;
     }
 
+    /**
+     * Autenticación con el servidor
+     * @param usuario
+     * @param password
+     * @param guardar
+     */
     public void login(final String usuario, final String password, final boolean guardar) {
-        final int[] statusCode = new int[1];
         StringRequest stringRequest;
         stringRequest = new StringRequest(Request.Method.POST, Constant.URL_LOGIN,
                 new Response.Listener<String>() {
 
                     @Override
                     public void onResponse(String response) {
-                        if (statusCode[0] == 200){
-                            Log.i("LoginCode", "Codigo Estado 200");
-                        }
                         Log.i("Login OK", "Se ha logeado correctamente. " + response);
-                        Usuario u = null;
+                        User u = null;
                         try {
-                            u = new Usuario(new JSONObject(response));
+                            u = new User(new JSONObject(response));
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        if (guardar) {
-                            Preferences.saveCredentials(context, u);
-                        }
+                        Preferences.saveCredentials(context, u, guardar);
+
                         Toast.makeText(context, "Autenticación correcta", Toast.LENGTH_LONG).show();
                         Intent intent = new Intent(context, MainActivity.class);
                         context.startActivity(intent);
@@ -95,7 +96,7 @@ public class Connection {
                     Log.i("ConnectionError", "Codigo error http: "+error.networkResponse.statusCode);
                     switch (statusCode){
                         case 403:
-                            Toast.makeText(context, "Usuario y/o contraseñas incorrectos", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, "User y/o contraseñas incorrectos", Toast.LENGTH_SHORT).show();
                             break;
                         case 500:
                             Toast.makeText(context, "Se ha producido un error en el servidor", Toast.LENGTH_SHORT).show();
@@ -111,7 +112,6 @@ public class Connection {
                     Log.i("ConnectionError", "No se puede conectar con el servidor");
                     Toast.makeText(context, "No se puede conectar con el servidor", Toast.LENGTH_SHORT).show();
                 }
-
             }
         }) {
             @Override
@@ -183,7 +183,7 @@ public class Connection {
      * @param sesion
      * @param presentacion
      */
-    public void crearSesion(final String sesion, final String presentacion, final View view) {
+    public void createSession(final String sesion, final String presentacion, final View view) {
         StringRequest stringRequest;
         final int[] statusCode = new int[1];
         final String URL = URLsesion + user.getNombreusuario();
@@ -230,6 +230,64 @@ public class Connection {
             protected Response<String> parseNetworkResponse(NetworkResponse response) {
                 statusCode[0] = response.statusCode;
                 return super.parseNetworkResponse(response);
+            }
+        };
+
+        RequestQueue requestQueue = Volley.newRequestQueue(context);
+        requestQueue.add(stringRequest);
+    }
+
+    public void deletePresentation(final String presentacion) {
+        Log.i("DeleteParams", "Presentacion: "+presentacion+" id usuario: "+String.valueOf(user.getId()));
+        StringRequest stringRequest;
+        stringRequest = new StringRequest(Request.Method.POST, Constant.getUrlUser(user.getNombreusuario()),
+                new Response.Listener<String>() {
+
+                    @Override
+                    public void onResponse(String response) {
+                        Log.i("DeletePresentation", "Se ha eliminado correctamente. " + response);
+                        Toast.makeText(context, response, Toast.LENGTH_SHORT).show();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // En caso de tener algun error en la obtencion de los datos
+                Log.e("ConnectionError", "Error al iniciar sesión" + error);
+                if (error.networkResponse != null){ //Conexion realizada pero con respuesta de error
+                    int statusCode = error.networkResponse.statusCode;
+                    Log.i("ConnectionError", "Codigo error http: "+error.networkResponse.statusCode);
+                    switch (statusCode){
+                        case 403:
+                            Toast.makeText(context, "User no registrado", Toast.LENGTH_SHORT).show();
+                            break;
+                        case 406:
+                            Toast.makeText(context, "Faltan parámetros en la petición", Toast.LENGTH_SHORT).show();
+                            break;
+                        case 500:
+                            Toast.makeText(context, "Se ha producido un error en el servidor y no se ha eliminado la presentación",
+                                    Toast.LENGTH_SHORT).show();
+                            break;
+                        case 503:
+                            Toast.makeText(context, "No se ha podido eliminar en la base de datos", Toast.LENGTH_SHORT).show();
+                            break;
+                        default:
+                            Toast.makeText(context, "Error desconocido", Toast.LENGTH_SHORT).show();
+                            break;
+                    }
+                } else { //Error al realizar la conexión
+                    Log.i("ConnectionError", "No se puede conectar con el servidor");
+                    Toast.makeText(context, "No se puede conectar con el servidor", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError { //TODO no envía los parámetros
+                // En este metodo se hace el envio de valores de la aplicacion al servidor
+                Map<String, String> parametros = new Hashtable<String, String>();
+                parametros.put("presentacion", presentacion);
+                parametros.put("id", String.valueOf(user.getId()));
+
+                return parametros;
             }
         };
 

@@ -18,11 +18,19 @@
     <string name="login_button">Send</string>
     <string name="sesion_edit_name">Session name</string>
     <string name="session_button">Create session</string>
-    <string name="present_btn_forward">Forward</string>
-    <string name="present_btn_backward">Backward</string>
+    <string name="present_btn_forward">Forward ></string>
+    <string name="present_btn_backward">&lt; Backward</string>
     <string name="present_zoom_in">Zoom in</string>
     <string name="present_zoom_out">Zoom out</string>
     <string name="present_btn_finish">End session</string>
-    <string name="menu_upload">Upload PDF</string>
-    <string name="menu_delete">Delete ...</string>
+    <string name="menu_upload">Upload presentation</string>
+    <string name="menu_delete">Delete presentation</string>
+    <string name="upload_select">Select file to upload</string>
+    <string name="upload_send">Upload presentation</string>
+    <string name="delete_button">Delete</string>
+    <string name="not_up_title">Upload presentation</string>
+    <string name="not_up_progress">"Uploading at "</string>
+    <string name="not_up_completed">"Upload completed successfully in "</string>
+    <string name="not_up_error">Error during upload</string>
+    <string name="present_btn_start">Start session</string>
 </resources>

@@ -1,7 +1,6 @@
 package es.ujaen.virtualpresentation.activities.ui.uploadfile;
 
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProviders;
 
 import android.Manifest;
@@ -10,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -31,9 +29,9 @@ import android.widget.Toast;
 import java.io.File;
 
 import es.ujaen.virtualpresentation.R;
-import es.ujaen.virtualpresentation.activities.MainActivity;
-import es.ujaen.virtualpresentation.activities.ui.home.HomeViewModel;
 import es.ujaen.virtualpresentation.connection.UploadFile;
+import es.ujaen.virtualpresentation.data.Preferences;
+import es.ujaen.virtualpresentation.data.User;
 
 public class UploadFileFragment extends Fragment {
 
@@ -65,9 +63,10 @@ public class UploadFileFragment extends Fragment {
         nombreFichero = root.findViewById(R.id.up_namefile);
         enviar = root.findViewById(R.id.up_sendFile);
         context = root.getContext();
-        //activity = getActivity();
+        User user = Preferences.getUser(context);
 
-        final UploadFile upload = new UploadFile(context);
+        final UploadFile upload = new UploadFile(context, user);
+        permisos(); //Solicita los permisos para leer la memoria
 
         //Botón seleccionar
         seleccionar.setOnClickListener(new View.OnClickListener() {

@@ -14,14 +14,15 @@ import android.widget.Toast;
 
 import es.ujaen.virtualpresentation.R;
 import es.ujaen.virtualpresentation.connection.Connection;
+import es.ujaen.virtualpresentation.data.Preferences;
 
 public class LoginActivity extends AppCompatActivity {
 
-    Connection conn;
+    private Connection conn;
 
-    EditText nusuario, pass;
-    Button btnlogin;
-    CheckBox recuerdame;
+    private EditText nusuario, pass;
+    private Button btnlogin;
+    private CheckBox recuerdame;
 
 
     @Override
@@ -80,6 +81,7 @@ public class LoginActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
+        Preferences.deleteCredentials(getApplicationContext());
         super.onDestroy();
     }
 }
