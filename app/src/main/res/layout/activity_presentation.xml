@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -11,62 +11,237 @@
 
     <Button
         android:id="@+id/bt_mas"
-        android:layout_width="match_parent"
+        android:layout_width="120dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginRight="20dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="16dp"
         android:background="@drawable/btn_round"
-        android:text="@string/present_btn_forward" />
+        android:text="@string/present_btn_forward"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/bt_menos"
-        android:layout_width="match_parent"
+        android:layout_width="120dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginRight="20dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="25dp"
         android:background="@drawable/btn_round"
-        android:text="@string/present_btn_backward" />
+        android:text="@string/present_btn_backward"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
         android:id="@+id/text_page"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="100dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginRight="100dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="25dp"
+        android:layout_marginEnd="10dp"
+        android:drawableTint="@color/colorAccent"
         android:gravity="center"
-        android:inputType="number" />
+        android:hint="100/200"
+        android:inputType="number"
+        app:layout_constraintEnd_toStartOf="@+id/bt_mas"
+        app:layout_constraintStart_toEndOf="@+id/bt_menos"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <Button
+    <!--<Button
         android:id="@+id/bt_zoommas"
-        android:layout_width="match_parent"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginRight="20dp"
+        android:layout_marginStart="45dp"
+        android:layout_marginTop="280dp"
+        android:layout_marginEnd="278dp"
+        android:layout_marginBottom="50dp"
         android:background="@drawable/btn_round"
-        android:text="@string/present_zoom_in" />
+        android:text="@string/present_zoom_in"
+        app:layout_constraintBottom_toTopOf="@+id/bt_zoommenos"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <Button
         android:id="@+id/bt_zoommenos"
-        android:layout_width="match_parent"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginRight="20dp"
+        android:layout_marginStart="45dp"
+        android:layout_marginTop="50dp"
+        android:layout_marginEnd="278dp"
+        android:layout_marginBottom="310dp"
         android:background="@drawable/btn_round"
-        android:text="@string/present_zoom_out" />
+        android:text="@string/present_zoom_out"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bt_zoommas" />-->
 
     <Button
         android:id="@+id/bt_finsesion"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginLeft="20dp"
-        android:layout_marginTop="30dp"
-        android:layout_marginRight="20dp"
+        android:layout_marginBottom="16dp"
         android:background="@drawable/btn_round"
         android:backgroundTint="#4CAF50"
-        android:text="@string/present_btn_start" />
-</LinearLayout>
+        android:text="@string/present_btn_start"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TableLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <Button
+                android:id="@+id/bt_zoommas"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="0"
+                android:background="@drawable/btn_round"
+                android:drawableTop="@drawable/ic_zoom_in"
+                android:text="@string/present_zoom_in" />
+
+            <Space
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:layout_column="1"/>
+            <Space
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:layout_column="2"/>
+
+            <ImageButton
+                android:id="@+id/bt_up"
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:layout_column="2"
+                android:backgroundTint="@color/colorWhite"
+                android:src="@drawable/ic_arrow_up"
+                android:tint="@color/colorAccent" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <Space
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:layout_column="0"/>
+            <Space
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:layout_column="1"/>
+
+            <ImageButton
+                android:id="@+id/bt_left"
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:layout_column="2"
+                android:backgroundTint="@color/colorWhite"
+                android:src="@drawable/ic_arrow_left"
+                android:text="Button"
+                android:tint="@color/colorAccent" />
+
+            <ImageButton
+                android:id="@+id/bt_right"
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:layout_column="4"
+                android:backgroundTint="@color/colorWhite"
+                android:src="@drawable/ic_arrow_right"
+                android:tint="@color/colorAccent" />
+        </TableRow>
+
+        <TableRow
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent">
+
+            <Button
+                android:id="@+id/bt_zoommenos"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_column="0"
+                android:background="@drawable/btn_round"
+                android:drawableBottom="@drawable/ic_zoom_out"
+                android:text="@string/present_zoom_out" />
+
+            <Space
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:layout_column="1"/>
+
+            <ImageButton
+                android:id="@+id/bt_down"
+                android:layout_width="55dp"
+                android:layout_height="55dp"
+                android:layout_column="3"
+                android:backgroundTint="@color/colorWhite"
+                android:src="@drawable/ic_arrow_down"
+                android:tint="@color/colorAccent" />
+        </TableRow>
+
+    </TableLayout>
+
+    <!--<Button
+        android:id="@+id/bt_up"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="100dp"
+        android:layout_marginTop="189dp"
+        android:layout_marginEnd="90dp"
+        android:layout_marginBottom="70dp"
+        android:text="Button"
+        app:layout_constraintBottom_toTopOf="@+id/bt_down"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/bt_zoommas"
+        app:layout_constraintTop_toBottomOf="@+id/bt_mas" />
+
+    <Button
+        android:id="@+id/bt_left"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="140dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="12dp"
+        android:text="Button"
+        app:layout_constraintBottom_toTopOf="@+id/bt_down"
+        app:layout_constraintEnd_toStartOf="@+id/bt_right"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/bt_up" />
+
+    <Button
+        android:id="@+id/bt_right"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="40dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="12dp"
+        android:text="Button"
+        app:layout_constraintBottom_toTopOf="@+id/bt_down"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/bt_left"
+        app:layout_constraintTop_toBottomOf="@+id/bt_up" />
+
+    <Button
+        android:id="@+id/bt_down"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="100dp"
+        android:layout_marginEnd="90dp"
+        android:layout_marginBottom="230dp"
+        android:text="Button"
+        app:layout_constraintBottom_toTopOf="@+id/bt_finsesion"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/bt_zoommenos" />-->
+
+</androidx.constraintlayout.widget.ConstraintLayout>
