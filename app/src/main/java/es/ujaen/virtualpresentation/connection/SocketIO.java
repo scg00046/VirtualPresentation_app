@@ -2,12 +2,14 @@ package es.ujaen.virtualpresentation.connection;
 
 import android.app.Activity;
 import android.util.Log;
+import android.widget.Toast;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 
+import es.ujaen.virtualpresentation.activities.PresentationActivity;
 import es.ujaen.virtualpresentation.data.Constant;
 import es.ujaen.virtualpresentation.data.Session;
 import es.ujaen.virtualpresentation.data.User;
@@ -61,6 +63,7 @@ public class SocketIO extends Thread {
             Log.i("SocketCrear","Socket creado, usuario: "+usuario.getNombreusuario()+", sesion: "+sesion.getNombreSesion());
             sendMessage("OK");
             Log.i("SocketCrear","Socket abierto (Ok enviado)");
+            //setListening();
         } catch (URISyntaxException | InterruptedException e) {
             e.printStackTrace();
         }
@@ -109,7 +112,29 @@ public class SocketIO extends Thread {
     private Emitter.Listener newMessageListner = new Emitter.Listener() {
         @Override
         public void call(final Object... args) {
-            Log.d("SocketNewMessage", "newMessageListner: " + args);
+            activity.runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    JSONObject data = (JSONObject) args[0];
+                    String origen;
+                    String mensaje;
+                    try {
+                        origen = data.getString("usuario");
+                        mensaje = data.getString("mensaje");
+                        if (origen.equals("web")){
+                            if (mensaje.startsWith("Página")){
+                                int pagina = Integer.parseInt(mensaje.split(" ")[1]);
+                                PresentationActivity.setPaginaActual(pagina);
+                            }else if ( mensaje.startsWith("Error") ){
+
+                            }
+                        }
+                    } catch (JSONException e) {
+                        return;
+                    }
+                    Log.i("SocketNewMessage", "Usuario: "+origen+" message: "+mensaje);
+                }
+            });
         }
     };
 
@@ -121,7 +146,6 @@ public class SocketIO extends Thread {
             mensaje.put("mensaje", texto);
             if (socket.connected()) {
                 Log.i("SocketSend","Envia mensaje");
-
                 socket.emit(sesion.getNombreSesion(),mensaje);
             }
         } catch (JSONException e) {
@@ -141,4 +165,12 @@ public class SocketIO extends Thread {
         return socket.connected();
     }
 
+    public void setListening () {
+        socket.on(sesion.getNombreSesion(), new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                Log.i("SocketReceive", "Recibido:: "+args);
+            }
+        });
+    }
 }

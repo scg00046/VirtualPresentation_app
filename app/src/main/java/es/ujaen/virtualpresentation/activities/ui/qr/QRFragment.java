@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -31,6 +32,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 
 import es.ujaen.virtualpresentation.R;
+import es.ujaen.virtualpresentation.activities.MainActivity;
 import es.ujaen.virtualpresentation.activities.PresentationActivity;
 import es.ujaen.virtualpresentation.data.Preferences;
 import es.ujaen.virtualpresentation.data.Session;
@@ -48,11 +50,12 @@ public class QRFragment extends Fragment {
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        Context context = QRFragment.super.getContext();
+       // Context context = QRFragment.super.getContext();
         //Context context = getContext();
         qrViewModel =
                 ViewModelProviders.of(this).get(QRViewModel.class);
         View root = inflater.inflate(R.layout.fragment_qr, container, false);
+        final Context context = root.getContext();
         /*final TextView textView = root.findViewById(R.id.text_gallery);
         galleryViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
@@ -60,6 +63,13 @@ public class QRFragment extends Fragment {
                 textView.setText(s);
             }
         });*/
+
+        if (ActivityCompat.checkSelfPermission(root.getContext(), Manifest.permission.CAMERA)
+                != PackageManager.PERMISSION_GRANTED) { //Permisos necesarios
+                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA},
+                        PERMISSIONS_REQUEST_CAMERA);
+        }
+
         cameraView = (SurfaceView) root.findViewById(R.id.camera_view);
         initQR(context);
         return root;
@@ -103,7 +113,7 @@ public class QRFragment extends Fragment {
                         Log.e("CamaraQR", ie.getMessage());
                     }
                 }//fin else permisos
-            }
+            }// fin surfaceCreated
 
             @Override
             public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -124,7 +134,7 @@ public class QRFragment extends Fragment {
 
             @Override
             public void receiveDetections(Detector.Detections<Barcode> detections) {
-                boolean hecho = false;
+                //boolean hecho = false;
                 final SparseArray<Barcode> barcodes = detections.getDetectedItems();
                 Toast.makeText(getActivity().getApplicationContext(),"INICIANDO QR", Toast.LENGTH_SHORT).show();
                 if (barcodes.size() > 0) {
@@ -134,7 +144,7 @@ public class QRFragment extends Fragment {
 
                     // verificamos que el token anterior no se igual al actual
                     // esto es util para evitar multiples llamadas empleando el mismo token
-                    if (!token.equals(tokenanterior) && !hecho) {
+                    if (!token.equals(tokenanterior) /*&& !hecho*/) {
 
                         // guardamos el ultimo token proceado
                         tokenanterior = token;
@@ -142,18 +152,18 @@ public class QRFragment extends Fragment {
 
                         try {
                             JSONObject tokenJson = new JSONObject(token);
-                            Session sm = Session.sesionJSON(tokenJson); //Sesión del QR
-                            Log.i("QR_sesionRecived","Sesion:"+sm.getNombreSesion()+" Pres: "+sm.getPresentacion()+" User: "+sm.getNombreUsuario());
-                            Session sa = Preferences.getSession(context,sm.getNombreSesion()); //Sesión almacenada
+                            Session sqr = Session.sesionJSON(tokenJson); //Sesión del QR
+                            Log.i("QR_sesionRecived","Sesion:"+sqr.getNombreSesion()+" Pres: "+sqr.getPresentacion()+" User: "+sqr.getNombreUsuario());
+
+                            Session sa = Preferences.getSession(context,sqr.getNombreSesion()); //Sesión almacenada
                             Log.i("QR_sesionSaved","Sesion:"+sa.getNombreSesion()+" Pres: "+sa.getPresentacion()+" User: "+sa.getNombreUsuario());
-                            if (sm.getNombreUsuario().equals(sa.getNombreUsuario()) && sm.getPresentacion().equals(sa.getPresentacion())){
+
+                            if (sqr.getNombreUsuario().equals(sa.getNombreUsuario()) && sqr.getPresentacion().equals(sa.getPresentacion())){
                                 Log.i("QR_Sesion", "Sesión correcta");
                                 Toast.makeText(QRFragment.this.getContext(),"Sesión ok", Toast.LENGTH_LONG).show(); //TODO revisar, no lo muestra
-                                hecho = true;
+                                //hecho = true;
                                 //TODO evitar que haga varias veces el intent
-                                Intent intent = new Intent(getContext(), PresentationActivity.class);
-                                intent.putExtra("sesion",sm.getNombreSesion());
-                                getContext().startActivity(intent);
+                                nextActivity(context, sqr.getNombreSesion());
                             }
 
                         } catch (JSONException e) {
@@ -177,5 +187,12 @@ public class QRFragment extends Fragment {
                 } //Fin if tamaño de codigo >0
             } //Fin receiveDetections
         }); //Fin barcode.setProcessor
+    }//Fin initQR
+
+    private void nextActivity(Context context, String nombreSesion){
+        Intent intent = new Intent(context, PresentationActivity.class);
+        intent.putExtra("sesion",nombreSesion);
+        getContext().startActivity(intent);
+        getActivity().finish();
     }
 }

@@ -21,7 +21,8 @@
     
     <!-- Splash theme -->
     <style name="SplashTheme" parent="AppTheme">
-        <item name="android:windowBackground">@drawable/start</item>
+        <item name="android:windowDisablePreview">true</item>
+        <!--<item name="android:windowBackground">@drawable/start</item>-->
     </style>
     
 </resources>
