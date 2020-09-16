@@ -58,11 +58,12 @@ public class SocketIO extends Thread {
             socket.on(Socket.EVENT_DISCONNECT, onDisconnect);
             socket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
             socket.on(sesion.getNombreSesion(), newMessageListner);
+            //socket.on(Constant.ROOM_SOCKET, newMessageListner);
             socket.connect();    //Connect socket to server
             Thread.sleep(500);
             Log.i("SocketCrear","Socket creado, usuario: "+usuario.getNombreusuario()+", sesion: "+sesion.getNombreSesion());
-            sendMessage("OK");
-            Log.i("SocketCrear","Socket abierto (Ok enviado)");
+            //sendMessage("OK");
+            //Log.i("SocketCrear","Socket abierto (Ok enviado)");
             //setListening();
         } catch (URISyntaxException | InterruptedException e) {
             e.printStackTrace();
@@ -121,7 +122,7 @@ public class SocketIO extends Thread {
                     try {
                         origen = data.getString("usuario");
                         mensaje = data.getString("mensaje");
-                        if (origen.equals("web")){
+                        if (origen.equals("web")){//TODO nombre de sesión + -web
                             if (mensaje.startsWith("Página")){
                                 int pagina = Integer.parseInt(mensaje.split(" ")[1]);
                                 PresentationActivity.setPaginaActual(pagina);
@@ -138,23 +139,40 @@ public class SocketIO extends Thread {
         }
     };
 
-    public void sendMessage(/*View v*/String texto) { //TODO realizar comprobación para que no vuelva a enviar varias veces
+    public void sendMessage(/*View v*/String texto) {
         Log.i("SocketPreSend","Enviando mensaje ...");
         JSONObject mensaje = new JSONObject();
         try {
+            mensaje.put("sesion", sesion.getNombreSesion());
             mensaje.put("usuario", usuario.getNombreusuario());
             mensaje.put("mensaje", texto);
             if (socket.connected()) {
                 Log.i("SocketSend","Envia mensaje");
-                socket.emit(sesion.getNombreSesion(),mensaje);
+                socket.emit(Constant.ROOM_SOCKET, mensaje);
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
 
+    public void sendNote(String texto) {
+        Log.i("SocketPreSend","Enviando mensaje ...");
+        JSONObject mensaje = new JSONObject();
+        try {
+            mensaje.put("sesion", sesion.getNombreSesion());
+            mensaje.put("usuario", usuario.getNombreusuario()+"-nota");
+            mensaje.put("mensaje", texto);
+            if (socket.connected()) {
+                Log.i("SocketSend","Envia mensaje");
+                socket.emit(Constant.ROOM_SOCKET, mensaje);
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     public void stopSesion(){
+        Log.i("SocketStop", "Desconexión del socket");
         if (socket != null) {
             socket.disconnect();
             socket = null;

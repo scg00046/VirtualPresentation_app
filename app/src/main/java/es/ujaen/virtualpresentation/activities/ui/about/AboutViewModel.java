@@ -12,7 +12,7 @@ public class AboutViewModel extends ViewModel {
 
     public AboutViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue(String.valueOf(R.string.menu_about));
+        //mText.setValue(String.valueOf(R.string.menu_about));
     }
 
     public LiveData<String> getText() {

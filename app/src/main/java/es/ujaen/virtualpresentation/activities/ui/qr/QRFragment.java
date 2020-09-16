@@ -157,7 +157,7 @@ public class QRFragment extends Fragment {
 
                             Session sa = Preferences.getSession(context,sqr.getNombreSesion()); //Sesión almacenada
                             Log.i("QR_sesionSaved","Sesion:"+sa.getNombreSesion()+" Pres: "+sa.getPresentacion()+" User: "+sa.getNombreUsuario());
-
+                            //Comprueba nombre de usuario y presentación
                             if (sqr.getNombreUsuario().equals(sa.getNombreUsuario()) && sqr.getPresentacion().equals(sa.getPresentacion())){
                                 Log.i("QR_Sesion", "Sesión correcta");
                                 Toast.makeText(QRFragment.this.getContext(),"Sesión ok", Toast.LENGTH_LONG).show(); //TODO revisar, no lo muestra

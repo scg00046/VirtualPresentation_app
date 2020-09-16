@@ -56,4 +56,13 @@
         android:text="@string/session_button"
         android:textColor="@color/colorPrimary" />
 
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="15dp"
+        android:layout_marginRight="15dp"
+        android:text="Si ya existe una sesión con ese nombre y ese usuario pero otra presentación se actualizará en el servidor"
+        />
+
 </LinearLayout>

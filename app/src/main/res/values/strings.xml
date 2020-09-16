@@ -33,4 +33,5 @@
     <string name="not_up_completed">"Upload completed successfully in "</string>
     <string name="not_up_error">Error during upload</string>
     <string name="present_btn_start">Start session</string>
+    <string name="present_zoom_reset">Reset</string>
 </resources>

@@ -27,4 +27,5 @@
     <string name="not_up_progress">"Subiendo a "</string>
     <string name="menu_home">Inicio</string>
     <string name="present_btn_start">Empezar sesión</string>
+    <string name="present_zoom_reset">Inicial</string>
 </resources>

@@ -15,7 +15,7 @@ public class Constant {
     public static final String URL_LOGIN = SERVER+DIR_NAME+"/usuario";
 
     private static final String URL_USER = SERVER+DIR_NAME+"/";
-    //public static final String IP = "";
+    public static final String URL_SESSION = SERVER+DIR_NAME+"/session/";
     //public static final String IP = "";
 
     /**
@@ -27,4 +27,17 @@ public class Constant {
         Log.i("Constant", "URL usuario: "+URL_USER+usuario);
         return URL_USER+usuario;
     }
+
+    /**
+     * Obtiene la url completa para las sesiones del usuario
+     * @param usuario
+     * @return
+     */
+    public static String getUrlSessionUser(@NonNull String usuario) {
+        Log.i("Constant", "URL sesion usuario: "+URL_SESSION+usuario);
+        return URL_SESSION+usuario;
+    }
+
+    public static final String ROOM_SOCKET = "virtualPresentations";
+
 }

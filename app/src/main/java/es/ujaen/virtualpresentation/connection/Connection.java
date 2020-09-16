@@ -41,12 +41,8 @@ import es.ujaen.virtualpresentation.data.User;
 
 public class Connection {
 
-    private final String ip_puerto = "192.168.1.10:8080";
-    private final String dominio = "http://" + ip_puerto + "/virtualpresentation/";
-    private final String URLusuario = dominio + "usuario";
-    private final String URLsesion = dominio + "session/";
     private Context context;
-    public User user;
+    private User user;
 
     public Connection(Context context) {
         Log.d("Connection", "Conexion creada");
@@ -136,16 +132,15 @@ public class Connection {
      * @param presList spinner para completarlo con las presentaciones recibidas
      */
     public void getPresentations(final Spinner presList) {
-        final String URL = dominio + user.getNombreusuario();
         final int[] statusCode = new int[1];
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, URL,
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, Constant.getUrlUser(user.getNombreusuario()),
                 new Response.Listener<String>() {
 
                     @Override
                     public void onResponse(String response) {
                         // En este apartado se programa lo que deseamos hacer en caso de no haber errores
                         Log.i("GetPresentaciones", "(" + statusCode[0] + ")" + response);
-                        Toast.makeText(context, "Lista de presentaciones recibidas", Toast.LENGTH_LONG).show();
+                        //Toast.makeText(context, "Lista de presentaciones recibidas", Toast.LENGTH_LONG).show();
 
                         try {
                             user.presentationsJSON(new JSONArray(response));
@@ -161,10 +156,10 @@ public class Connection {
                     }
                 }, new Response.ErrorListener() {
             @Override
-            public void onErrorResponse(VolleyError error) {
+            public void onErrorResponse(VolleyError error) { //TODO recoger errores
                 // En caso de tener algun error en la obtencion de los datos
                 Log.w("ConnectionError", "Error al pedir las presentaciones, " + error.toString());
-                Toast.makeText(context, "Error al recibir las presentaciones (" + statusCode[0] + ")", Toast.LENGTH_LONG).show();
+                //Toast.makeText(context, "Error al recibir las presentaciones (" + statusCode[0] + ")", Toast.LENGTH_LONG).show();
             }
         }) {
             @Override
@@ -186,8 +181,7 @@ public class Connection {
     public void createSession(final String sesion, final String presentacion, final View view) {
         StringRequest stringRequest;
         final int[] statusCode = new int[1];
-        final String URL = URLsesion + user.getNombreusuario();
-        stringRequest = new StringRequest(Request.Method.POST, URL,
+        stringRequest = new StringRequest(Request.Method.POST, Constant.getUrlSessionUser(user.getNombreusuario()),
                 new Response.Listener<String>() {
 
                     @SuppressLint("ResourceAsColor")
@@ -205,17 +199,41 @@ public class Connection {
                                     .setBackgroundTint(R.color.colorErrorBackg)
                                     .show();
                         }
-
-                        //Toast.makeText(context, "Sesión creada", Toast.LENGTH_LONG).show();
                         //TODO cambiar de fragmento
-
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 Log.w("ConnectionError", "Error al crear sesión" + error);
-                Toast.makeText(context, "Error al crear sesión", Toast.LENGTH_LONG).show();
-            }
+                //Toast.makeText(context, "Error al crear sesión", Toast.LENGTH_LONG).show();
+                if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
+                    int statusCode = error.networkResponse.statusCode;
+                    Presentations present = user.getPresentationByName(presentacion);
+                    switch (statusCode){
+                        case 400: //La sesión ya existe
+                            Log.w("CreateSessionError", "La sesión ya existe en el servidor.");
+                            if (present != null) {
+                                Session session = new Session(user.getNombreusuario(), sesion, presentacion, present.getPaginas());
+                                Preferences.saveSession(context, session);
+                                Snackbar.make(view, "Se ha guardado la sesión", Snackbar.LENGTH_LONG).show();
+                            }
+                            break;
+                        case 301: //Actualización de la sesión
+                            Log.w("CreateSessionError", "La sesión ya existe en el servidor con otra presentación. Se ha actualizado");
+                            if (present != null) {
+                                Session session = new Session(user.getNombreusuario(), sesion, presentacion, present.getPaginas());
+                                Preferences.saveSession(context, session);
+                                Snackbar.make(view, "Se ha actualizado la sesión a otra presentación", Snackbar.LENGTH_LONG).show();
+                            }
+                            break;
+                        case 406:
+                            Snackbar.make(view, "No se han enviado datos", Snackbar.LENGTH_LONG).show();
+                            break;
+                        default:
+                            break;
+                    }//Fin switch
+                }
+            }//Fin on error response
         }) {
             @Override
             protected Map<String, String> getParams() {
@@ -226,13 +244,12 @@ public class Connection {
                 return parametros;
             }
 
-            @Override
+            /*@Override
             protected Response<String> parseNetworkResponse(NetworkResponse response) {
                 statusCode[0] = response.statusCode;
                 return super.parseNetworkResponse(response);
-            }
+            }*/
         };
-
         RequestQueue requestQueue = Volley.newRequestQueue(context);
         requestQueue.add(stringRequest);
     }

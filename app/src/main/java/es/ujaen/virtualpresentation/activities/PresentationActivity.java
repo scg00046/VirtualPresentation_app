@@ -9,14 +9,17 @@ import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.material.snackbar.Snackbar;
 
 import es.ujaen.virtualpresentation.R;
 import es.ujaen.virtualpresentation.connection.SocketIO;
@@ -27,15 +30,17 @@ import es.ujaen.virtualpresentation.data.User;
 public class PresentationActivity extends AppCompatActivity {
     private SocketIO socketIO;
 
-    private Button pmas, pmenos, zmas, zmenos, fin;
-    private ImageButton subir, bajar, izquierda, derecha;
-    static EditText pagina;
+    private Button pmas, pmenos, zmas, zmenos, fin, muestranotas, zinicial, eliminanotas;
+    private ImageButton subir, bajar, izquierda, derecha, enviaNota;
+    private static EditText pagina;
+    private EditText nota;
 
-    private String sesion;
+    private Session s;
+    private String nombreSesion;
     private static int paginaActual = 1;
     private static int paginaMax;
 
-    private boolean finsesion = false;
+    private Context context;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,49 +48,89 @@ public class PresentationActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_presentation);
 
-        sesion = getIntent().getStringExtra("sesion");
-        Log.i("PresentationActivity", "Iniciando actividad presentación, con sesión:" + sesion);
+        nombreSesion = getIntent().getStringExtra("sesion");
+        Log.i("PresentationActivity", "Iniciando actividad presentación, con sesión:" + nombreSesion);
         //final Context context = getApplicationContext();
-        final Context context = this;
+        context = this;
         final User u = Preferences.getUser(context);
-        final Session s = Preferences.getSession(context, sesion);
-        final int paginaOK = getResources().getColor(R.color.colorAccent);
+        s = Preferences.getSession(context, nombreSesion);
+        final int colorpaginaOK = getResources().getColor(R.color.colorAccent);
 
         paginaMax = s.getPaginas();
 
         socketIO = new SocketIO(PresentationActivity.this, u, s);
-//        Thread hilo =  socketIO; //TODO Revisar para que pueda hacerse en el fondo
-//        hilo.start();
+        Thread hilo =  socketIO; //TODO Revisar para que pueda hacerse en el fondo
+        hilo.start();
 
-        pmas = findViewById(R.id.bt_mas);
-        pmenos = findViewById(R.id.bt_menos);
-        zmas = findViewById(R.id.bt_zoommas);
-        zmenos = findViewById(R.id.bt_zoommenos);
-        fin = findViewById(R.id.bt_finsesion);
-        pagina = findViewById(R.id.text_page);
+        pmas = findViewById(R.id.pr_bt_next);
+        pmenos = findViewById(R.id.pr_bt_previous);
+        zmas = findViewById(R.id.pr_bt_zoom_more);
+        zmenos = findViewById(R.id.pr_bt_zoom_less);
+        zinicial = findViewById(R.id.pr_bt_zoom_reset);
+        pagina = findViewById(R.id.pr_num_page);
 
-        subir = findViewById(R.id.bt_up);
-        bajar = findViewById(R.id.bt_down);
-        izquierda = findViewById(R.id.bt_left);
-        derecha = findViewById(R.id.bt_right);
+        subir = findViewById(R.id.pr_bt_up);
+        bajar = findViewById(R.id.pr_bt_down);
+        izquierda = findViewById(R.id.pr_bt_left);
+        derecha = findViewById(R.id.pr_bt_right);
 
-        buttonsClickable(false);
+        muestranotas = findViewById(R.id.pr_bt_open_notes);
+        eliminanotas = findViewById(R.id.pr_bt_delete_notes);
+        nota = findViewById(R.id.pr_note);
+        enviaNota = findViewById(R.id.pr_bt_send_notes);
+
+        View view = findViewById(R.id.activityPresentation);
+
+        //Comprobación de conexión
+        if (!socketIO.isConnected()){
+            buttonsClickable(false);
+            Snackbar mySnackbar = Snackbar.make(view,
+                    "No se ha conectado correctamente", Snackbar.LENGTH_INDEFINITE);
+            mySnackbar.setAction("Reintentar", new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if(socketIO.isConnected()){
+                        socketIO.sendMessage("OK");
+                        int numero = s.getPaginaInicio();
+                        try {
+                            Thread.sleep(200); //Tiempo de espera necesario entre peticiones
+                            if (numero > 1) {
+                                socketIO.sendMessage("pnum-" + numero);
+                            }
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        buttonsClickable(true);
+                    }
+                }
+            });
+            mySnackbar.show();
+        } else {
+            socketIO.sendMessage("OK");
+            int numero = s.getPaginaInicio(); //No lo recibe correctamente por el tiempo de espera
+            try {
+                Thread.sleep(200);
+                if (numero > 1) {
+                    socketIO.sendMessage("pnum-" + numero);
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            //Toast.makeText(context, "Conectado", Toast.LENGTH_SHORT).show();
+        }
 
         //Página específica
-        pagina.setOnKeyListener(new View.OnKeyListener() {
+        pagina.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
-            public boolean onKey(View view, int i, KeyEvent keyEvent) {
-                if ((keyEvent.getAction() == KeyEvent.ACTION_DOWN) &&
-                        (i == KeyEvent.KEYCODE_ENTER)) {
+            public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
+                if (i == EditorInfo.IME_ACTION_DONE){
                     int numero = Integer.parseInt(pagina.getText().toString().trim());
-                    Log.i("Pagina", "Pagina: " + numero);
-                    //Toast.makeText(getApplicationContext(), "Nueva página: "+numero, Toast.LENGTH_SHORT).show();
-                    if (numero >= 1 && numero <= paginaMax) {
-                        pagina.setBackgroundTintList(ColorStateList.valueOf(paginaOK));
+                    Log.i("Pagina", "Pagina obtenida "+numero);
+                    if (numero >= 1 && numero <= paginaMax) { //Número correcto
+                        pagina.setBackgroundTintList(ColorStateList.valueOf(colorpaginaOK));
                         socketIO.sendMessage("pnum-" + numero);
                     } else {
                         pagina.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
-                        //Toast.makeText(context, "Número de página inválido", Toast.LENGTH_SHORT).show();
                     }
                     pagina.getText().clear();
                     return true;
@@ -93,6 +138,7 @@ public class PresentationActivity extends AppCompatActivity {
                 return false;
             }
         });
+
         //Avanzar
         pmas.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -131,6 +177,13 @@ public class PresentationActivity extends AppCompatActivity {
                 socketIO.sendMessage("zmenos");
             }
         });
+        //Reiniciar zoom y posición
+        zinicial.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                socketIO.sendMessage("zinicial");
+            }
+        });
         //Subir
         subir.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -160,38 +213,30 @@ public class PresentationActivity extends AppCompatActivity {
             }
         });
 
-
-        //finalizar/empezar sesion
-        fin.setOnClickListener(new View.OnClickListener() {
+        //Mostrar/ocultar lista de notas
+        muestranotas.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) { //TODO revisar
-                if (!finsesion) { //Iniciar sesión
-                    Thread hilo = socketIO;
-                    hilo.start(); //Activa la sesión
-                    fin.setText(R.string.present_btn_finish);
-                    //fin.setBackgroundColor(Color.RED);
-                    buttonsClickable(true);
-                    finsesion = true;
-                } else { //Finalizar sesión
-                    fin.setText(R.string.present_btn_start);
-                    //fin.setBackgroundColor(Color.parseColor("#4CAF50"));
-                    AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                    builder.setTitle("¿Está seguro?");
-                    builder.setMessage("¿Desea finalizar la sesión?");
-
-                    builder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            socketIO.sendMessage("FIN");
-                            socketIO.interrupt();
-                            finsesion = false;
-                            finish();
-                        }
-                    });
-                    builder.setNegativeButton("No", null);
-                    AlertDialog dialog = builder.create();
-                    dialog.show();
-
+            public void onClick(View view) {
+                socketIO.sendMessage("muestraNotas");
+            }
+        });
+        //Elimina las notas enviadas
+        eliminanotas.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                socketIO.sendMessage("eliminaNotas");
+            }
+        });
+        //Envía nota
+        enviaNota.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String nuevaNota = nota.getText().toString().trim();
+                if (nuevaNota.length()>0){
+                    nuevaNota = nuevaNota.replaceAll(System.getProperty("line.separator"),"<br>");
+                    Log.i("EnviaNota", "Nota: '"+nuevaNota+"'");
+                    socketIO.sendNote(nuevaNota);
+                    nota.getText().clear();
                 }
             }
         });
@@ -199,19 +244,47 @@ public class PresentationActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        super.onBackPressed();
-        Intent intent = new Intent(PresentationActivity.this, MainActivity.class);
-        startActivity(intent);
+
+        final boolean[] salir = new boolean[1];
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("¿Está seguro?");
+        builder.setMessage("¿Desea finalizar la sesión?");
+
+        builder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Preferences.refreshSession(context, s, paginaActual);
+                socketIO.sendMessage("FIN");
+                Intent intent = new Intent(PresentationActivity.this, MainActivity.class);
+                startActivity(intent);
+                salir[0] = true;
+            }
+        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                salir[0] = false;
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
+        if (salir[0]){
+            super.onBackPressed();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        socketIO.interrupt();
+        socketIO.stopSesion();
+        socketIO = null;
+        finish();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        socketIO.sendMessage("FIN");
-        socketIO.interrupt();
-        //socketIO.stopSesion();
-       /* Intent intent = new Intent(PresentationActivity.this, MainActivity.class);
-        startActivity(intent);*/
     }
 
     public static void setPaginaActual(int p) {
@@ -220,6 +293,11 @@ public class PresentationActivity extends AppCompatActivity {
     }
 
     private void buttonsClickable(boolean click) {
+        if (!click){
+            pagina.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+        } else {
+            pagina.setBackgroundTintList(ColorStateList.valueOf(getResources().getColor(R.color.colorAccent)));
+        }
         pmas.setEnabled(click);
         pagina.setEnabled(click);
         pmenos.setEnabled(click);
@@ -229,5 +307,10 @@ public class PresentationActivity extends AppCompatActivity {
         bajar.setEnabled(click);
         izquierda.setEnabled(click);
         derecha.setEnabled(click);
+        zinicial.setEnabled(click);
+        muestranotas.setEnabled(click);
+        eliminanotas.setEnabled(click);
+        nota.setEnabled(click);
+        enviaNota.setEnabled(click);
     }
 }

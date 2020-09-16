@@ -11,6 +11,7 @@ public class Session {
     private String nombreSesion;
     private String presentacion;
     private int paginas;
+    private int paginaInicio;
 
     public Session(String nombreUsuario, String nombreSesion, String presentacion, int paginas) {
         this.nombreUsuario = nombreUsuario;
@@ -40,6 +41,14 @@ public class Session {
 
     public int getPaginas() {
         return paginas;
+    }
+
+    public int getPaginaInicio() {
+        return paginaInicio;
+    }
+
+    public void setPaginaInicio(int paginaInicio) {
+        this.paginaInicio = paginaInicio;
     }
 
     public static Session sesionJSON (JSONObject s) throws JSONException {

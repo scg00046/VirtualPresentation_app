@@ -10,7 +10,7 @@ public class HomeViewModel extends ViewModel {
 
     public HomeViewModel() {
         mText = new MutableLiveData<>();
-        mText.setValue("Fragmento de creación de sesión");
+        mText.setValue("Creación de sesión");
     }
 
     public LiveData<String> getText() {

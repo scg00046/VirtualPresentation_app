@@ -66,6 +66,21 @@ public class Preferences {
     }
 
     /**
+     * Guarda los datos de sesión
+     * @param context
+     * @param session
+     */
+    public static void refreshSession(Context context, Session session, int paginafinal){
+        SharedPreferences sp = context.getSharedPreferences(session.getNombreSesion(),Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putString("nombreusuario",session.getNombreUsuario());
+        editor.putString("presentacion", session.getPresentacion());
+        editor.putInt("paginas", session.getPaginas());
+        editor.putInt("paginaInicial", paginafinal);
+        editor.commit();
+    }
+
+    /**
      * Obtiene la sesión dado el nombre de la misma
      * @param context
      * @param nombreSesion
@@ -76,7 +91,9 @@ public class Preferences {
         String usuario = sp.getString("nombreusuario", "");
         String presentacion = sp.getString("presentacion", "");
         int paginas = sp.getInt("paginas",0);
+        int paginaInicial = sp.getInt("paginaInicial", 1);
         Session session = new Session(usuario, nombreSesion,presentacion,paginas);
+        session.setPaginaInicio(paginaInicial);
         return session;
     }
 
