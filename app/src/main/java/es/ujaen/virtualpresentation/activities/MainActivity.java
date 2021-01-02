@@ -1,13 +1,17 @@
 package es.ujaen.virtualpresentation.activities;
 
-import android.content.SharedPreferences;
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Menu;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
 
+import androidx.annotation.NonNull;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
@@ -17,10 +21,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import es.ujaen.virtualpresentation.R;
+import es.ujaen.virtualpresentation.data.Preferences;
+import es.ujaen.virtualpresentation.data.User;
 
+/**
+ * Activity principal, consta de varios fragmentos
+ * @author Sergio Caballero Garrido
+ */
 public class MainActivity extends AppCompatActivity {
 
     private AppBarConfiguration mAppBarConfiguration;
+
+    private static FloatingActionButton fab;
 
     public String usuario;
 
@@ -31,32 +43,46 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        SharedPreferences sf = getSharedPreferences("default", MODE_PRIVATE);
-        String usuario = sf.getString("nombre", "");
+        User u = Preferences.getUser(getApplicationContext());
+        String nombre = u.getNombre() + " " + u.getApellidos();
+        //SharedPreferences sf = getSharedPreferences("default", MODE_PRIVATE);
+        //String usuario = sf.getString("nombre", "");
 
-        /*FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
-            }
-        });*/
+        fab = findViewById(R.id.fab);
+
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
 
+        /*List<String> defSpinner = new ArrayList<>();
+        defSpinner.add("No hay presentaciones para " + usuario);
+        Spinner presList = findViewById(R.id.presentationList);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
+                android.R.layout.simple_spinner_dropdown_item,
+                Collections.unmodifiableList(defSpinner));
+        presList.setAdapter(adapter);
+        presList.setClickable(false);*/
+
         View navView = navigationView.getHeaderView(0);
-        TextView textUsuario = (TextView) navView.findViewById(R.id.nav_usuario);
-        textUsuario.setText(usuario);
+        TextView textNombre = (TextView) navView.findViewById(R.id.nav_user_name);
+        TextView textLogin = (TextView) navView.findViewById(R.id.nav_user_login);
+        textNombre.setText(nombre);
+        textLogin.setText(u.getNombreusuario());
         // Passing each menu ID as a set of Ids because each
         // menu should be considered as top level destinations.
         mAppBarConfiguration = new AppBarConfiguration.Builder(
                 R.id.nav_home, R.id.nav_qr, R.id.nav_upload, R.id.nav_delete, R.id.nav_about)
                 .setDrawerLayout(drawer)
                 .build();
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+        final NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                navController.navigate(R.id.nav_qr);
+            }
+        });
     }
 
     @Override
@@ -74,7 +100,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == R.id.action_logout){
+            Toast.makeText(this, "Se ha cerrado la sesión", Toast.LENGTH_SHORT).show();
+            Preferences.deleteCredentials(this);
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @Override
     protected void onDestroy() {
         super.onDestroy();
+    }
+
+    public static void hiddenFloatButton (){
+        fab.setVisibility(View.GONE);
+    }
+
+    public static void showFloatButton (){
+        fab.setVisibility(View.VISIBLE);
     }
 }

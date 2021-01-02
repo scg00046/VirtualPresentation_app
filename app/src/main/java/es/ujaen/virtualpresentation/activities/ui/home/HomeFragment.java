@@ -1,8 +1,11 @@
 package es.ujaen.virtualpresentation.activities.ui.home;
 
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,6 +25,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import es.ujaen.virtualpresentation.R;
@@ -33,21 +37,24 @@ public class HomeFragment extends Fragment {
 
     private HomeViewModel homeViewModel;
     private EditText session;
-    private Spinner presList;
-    private Button enviaSesion;
+    private static Spinner presList;
+    private static Button enviaSesion;
+    private TextView descipcion;
     private FragmentManager fm;
+
+    private static int colorAccent;
+    private static int colorGrey;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         Log.i("HomeFragment", "Iniciando Fragmento Home");
         Context context = HomeFragment.super.getContext();
         User user = Preferences.getUser(context);
+        Log.i("HomeFragment_user", user.getNombreusuario()+" - "+user.getNombre());
         final Connection con = new Connection(context, user);
         fm = getActivity().getSupportFragmentManager();
 
-        List<String> def_spinner = new ArrayList<>();// = con.user.getLista();
-        Log.i("HomeFragment_user", user.getNombreusuario()+" - "+user.getNombre());
-        //Log.i("HomeFragment_list", present.toString());
+
 
         homeViewModel =
                 ViewModelProviders.of(this).get(HomeViewModel.class);
@@ -57,26 +64,19 @@ public class HomeFragment extends Fragment {
         session = root.findViewById(R.id.sessionname);
         presList = root.findViewById(R.id.presentationList);
         enviaSesion = root.findViewById(R.id.sendSession);
+        descipcion = root.findViewById(R.id.sessionDescription);
 
-        // TODO si no hay presentaciones mostrar un texto en lugar del spinner
-        def_spinner.add("No hay presentaciones para " + user.getNombreusuario());
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(root.getContext().getApplicationContext(),
-                android.R.layout.simple_spinner_dropdown_item, def_spinner);
+        colorAccent = root.getResources().getColor(R.color.colorAccent);
+        colorGrey = root.getResources().getColor(R.color.colorGrey);
+
+        List<String> defSpinner = new ArrayList<>();
+        defSpinner.add("No hay presentaciones para " + user.getNombreusuario());
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_dropdown_item,
+                Collections.unmodifiableList(defSpinner));
         presList.setAdapter(adapter);
-        presList.setBackgroundColor(Color.parseColor("#FFEFEE"));
+        activateSendSession(false);
+        con.getPresentations(presList, 0);
 
-
-        //final Connection con = new Connection(root.getContext().getApplicationContext(), user);
-        con.getPresentations(presList);
-        /*if (con.user.getLista().size() == 0) {
-            present.add(0, "No hay presentaciones para " + user.getNombreusuario());
-        } else {
-            present = con.user.getLista();
-        }
-        Log.i("HomeFragment_list", present.toString());
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(root.getContext().getApplicationContext(),
-                android.R.layout.simple_spinner_dropdown_item, present);
-        presList.setAdapter(adapter);*/
 
         homeViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
@@ -85,29 +85,34 @@ public class HomeFragment extends Fragment {
             }
         });
 
-        /*presList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
-                /*String fila = con.user.getLista().get(position);
-                String[] parts = fila.split("-");
-                String id = parts[0];
-
-            }
-        });*/
-
         enviaSesion.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String sesion = session.getText().toString().trim();
                 String seleccionado = presList.getSelectedItem().toString();
                 con.createSession(sesion,seleccionado,root);
-                Toast.makeText(root.getContext().getApplicationContext(), "Sesion: "+sesion+" - "+seleccionado, Toast.LENGTH_LONG).show();
-                //Toast.makeText(root.getContext().getApplicationContext(), "Rellena todos los campos", "Rellena todos los campos".length()).show();
+                //Toast.makeText(root.getContext().getApplicationContext(), "Sesion: "+sesion+" - "+seleccionado, Toast.LENGTH_LONG).show();
             }
         });
 
-
-
         return root;
+    }
+
+    /**
+     * Activa o desactiva el botón para enviar sesión
+     * @param activar
+     */
+    public static void activateSendSession(boolean activar){
+        if (activar){
+            enviaSesion.setClickable(true);
+            enviaSesion.setEnabled(true);
+            presList.setClickable(true);
+            enviaSesion.setBackgroundTintList(ColorStateList.valueOf(colorAccent));
+        }else {
+            enviaSesion.setClickable(false);
+            enviaSesion.setEnabled(false);
+            presList.setClickable(false);
+            enviaSesion.setBackgroundTintList(ColorStateList.valueOf(colorGrey));
+        }
     }
 }

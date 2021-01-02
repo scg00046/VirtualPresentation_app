@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModelProviders;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -21,6 +22,7 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import es.ujaen.virtualpresentation.R;
@@ -32,8 +34,11 @@ public class DeleteFragment extends Fragment {
 
     private DeleteViewModel mViewModel;
 
-    private Spinner presList;
-    private Button delete;
+    private static Spinner presList;
+    private static Button delete;
+
+    private static int colorAccent;
+    private static int colorGrey;
 
     public static DeleteFragment newInstance() {
         return new DeleteFragment();
@@ -51,12 +56,17 @@ public class DeleteFragment extends Fragment {
         presList = root.findViewById(R.id.presentationList);
         delete = root.findViewById(R.id.delete);
 
+        colorAccent = root.getResources().getColor(R.color.colorAccent);
+        colorGrey = root.getResources().getColor(R.color.colorGrey);
+
         List<String> def_spinner = new ArrayList<>();
         def_spinner.add("No hay presentaciones para " + user.getNombreusuario());
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(root.getContext().getApplicationContext(),
-                android.R.layout.simple_spinner_dropdown_item, def_spinner);
+        ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
+                android.R.layout.simple_spinner_dropdown_item,
+                Collections.unmodifiableList(def_spinner));
         presList.setAdapter(adapter);
-        con.getPresentations(presList);
+        activateDelete(false);
+        con.getPresentations(presList, 1);
 
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,6 +97,24 @@ public class DeleteFragment extends Fragment {
         super.onActivityCreated(savedInstanceState);
         mViewModel = ViewModelProviders.of(this).get(DeleteViewModel.class);
         // TODO: Use the ViewModel
+    }
+
+    /**
+     * Activa o desactiva el botón para eliminar presentación
+     * @param activar
+     */
+    public static void activateDelete(boolean activar){
+        if (activar){
+            delete.setClickable(true);
+            delete.setEnabled(true);
+            presList.setClickable(true);
+            delete.setBackgroundTintList(ColorStateList.valueOf(colorAccent));
+        }else {
+            delete.setClickable(false);
+            delete.setEnabled(false);
+            presList.setClickable(false);
+            delete.setBackgroundTintList(ColorStateList.valueOf(colorGrey));
+        }
     }
 
 }

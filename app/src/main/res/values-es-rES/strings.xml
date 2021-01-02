@@ -15,17 +15,20 @@
     <string name="present_zoom_out">Zoom menos</string>
     <string name="present_btn_finish">Finalizar sesión</string>
     <string name="menu_about">Acerca de</string>
-    <string name="action_settings">Ajustes</string>
+    <string name="action_logout">Cerrar sesión</string>
     <string name="menu_upload">Subir presentación</string>
     <string name="menu_delete">Eliminar presentación</string>
     <string name="upload_select">Seleccione la presentación</string>
     <string name="upload_send">Subir presentación</string>
     <string name="delete_button">Eliminar</string>
     <string name="not_up_title">Subir presentacion</string>
-    <string name="not_up_completed">"Subida completada con éxito en "</string>
+    <string name="not_up_completed">Subida completada con éxito</string>
     <string name="not_up_error">Error en la subida</string>
-    <string name="not_up_progress">"Subiendo a "</string>
+    <string name="not_up_progress">"Subiendo ... "</string>
     <string name="menu_home">Inicio</string>
     <string name="present_btn_start">Empezar sesión</string>
     <string name="present_zoom_reset">Inicial</string>
+    <string name="session_name_filter">abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ0123456789-_</string>
+    <string name="create_session_description">Si ya existe una sesión con ese nombre y ese usuario pero otra presentación se actualizará en el servidor.
+        Los caracteres válidos para el nombre de sesión son alfanuméricos, permite mayusculas y los caractéres guión \'-\' y guión bajo \'_\'.</string>
 </resources>

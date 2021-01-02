@@ -1,10 +1,13 @@
 package es.ujaen.virtualpresentation.data;
 
-import android.content.Context;
 import android.util.Log;
-
 import androidx.annotation.NonNull;
 
+/**
+ * Clase Constant, constantes del servidor (urls)
+ *
+ * @author Sergio Caballero Garrido
+ */
 public class Constant {
 
     private static final String IP ="192.168.1.10";
@@ -16,12 +19,13 @@ public class Constant {
 
     private static final String URL_USER = SERVER+DIR_NAME+"/";
     public static final String URL_SESSION = SERVER+DIR_NAME+"/session/";
-    //public static final String IP = "";
+
+    public static final String ROOM_SOCKET = "virtualPresentations";
 
     /**
      * Obtiene la url completa para el usuario
-     * @param usuario
-     * @return
+     * @param usuario autenticado
+     * @return url '../virtualpresentation/{usuario}'
      */
     public static String getUrlUser(@NonNull String usuario) {
         Log.i("Constant", "URL usuario: "+URL_USER+usuario);
@@ -30,14 +34,12 @@ public class Constant {
 
     /**
      * Obtiene la url completa para las sesiones del usuario
-     * @param usuario
-     * @return
+     * @param usuario autenticado
+     * @return url '../virtualpresentation/session/{usuario}'
      */
     public static String getUrlSessionUser(@NonNull String usuario) {
         Log.i("Constant", "URL sesion usuario: "+URL_SESSION+usuario);
         return URL_SESSION+usuario;
     }
-
-    public static final String ROOM_SOCKET = "virtualPresentations";
 
 }

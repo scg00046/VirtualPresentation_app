@@ -1,7 +1,6 @@
 package es.ujaen.virtualpresentation.data;
 
 import android.util.Log;
-import android.widget.ArrayAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -11,14 +10,19 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Clase usuario, parámetros del usuario que ha accedido a la aplicación
+ * @author Sergio Caballero Garrido
+ */
 public class User {
 
     private int id;
     private String nombreusuario;
     private String nombre;
     private String apellidos;
-    private List<Presentations> presentationsList;
-    private List<String> lista;
+    //TODO revisar listas
+    private List<Presentations> listaPresentaciones; //Almacena los datos de las presentaciones
+    private List<String> listaPresentacionesString; //Usada para el spinner
 
     /**
      * Constructor con parámetros
@@ -32,8 +36,8 @@ public class User {
         this.nombreusuario = nombreusuario;
         this.nombre = nombre;
         this.apellidos = apellidos;
-        this.presentationsList = new ArrayList<>();
-        this.lista = new ArrayList<>();
+        this.listaPresentaciones = new ArrayList<>();
+        this.listaPresentacionesString = new ArrayList<>();
     }
 
     /**
@@ -46,8 +50,8 @@ public class User {
         this.nombreusuario = userJson.getString("nombreusuario");
         this.nombre = userJson.getString("nombre");
         this.apellidos = userJson.getString("apellidos");
-        this.presentationsList = new ArrayList<>();
-        this.lista = new ArrayList<>();
+        this.listaPresentaciones = new ArrayList<>();
+        this.listaPresentacionesString = new ArrayList<>();
     }
 
     public User() {
@@ -61,60 +65,44 @@ public class User {
         return nombreusuario;
     }
 
-    public void setNombreusuario(String nombreusuario) {
-        this.nombreusuario = nombreusuario;
-    }
-
     public String getNombre() {
         return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
     }
 
     public String getApellidos() {
         return apellidos;
     }
 
-    public void setApellidos(String apellidos) {
-        this.apellidos = apellidos;
+    public List<Presentations> getListaPresentaciones() {
+        return Collections.unmodifiableList(listaPresentaciones);
     }
 
-    public List<Presentations> getPresentationsList() {
-        return Collections.unmodifiableList(presentationsList);
-    }
-
-    public List<String> getLista() {
-        return Collections.unmodifiableList(lista);
+    public List<String> getListaPresentacionesString() {
+        return Collections.unmodifiableList(listaPresentacionesString);
     }
 
     public void addPresentation(int id, String nombre){
-        this.lista.add(nombre);
+        this.listaPresentacionesString.add(nombre);
     }
 
-    public void presentationsJSON (JSONArray array) throws JSONException{
+    public void presentationsJSONtoList(JSONArray array) throws JSONException{
         Log.i("Usuario_Json","Iniciando conversión");
-            //JSONArray arrayJson = new JSONArray(cadenaJson);
             for (int i = 0; i < array.length(); i++){
-
                 JSONObject pres = array.getJSONObject(i);
                 int id = pres.getInt("idpresentacion");
-                String presentacion = pres.getString("presentacion");
-                Presentations presentation = new Presentations(id, presentacion,
+                String nombrePresentacion = pres.getString("presentacion");
+                Presentations presentacion = new Presentations(id, nombrePresentacion,
                         pres.getInt("paginas") );
-                Log.i("Usuario_Json",id+"-"+presentacion);
-                this.presentationsList.add(/*id,*/presentation);
-                this.lista.add(/*id,*/presentacion);
-
+                Log.i("Usuario_Json",id+"-"+nombrePresentacion);
+                this.listaPresentaciones.add(presentacion);
+                this.listaPresentacionesString.add(nombrePresentacion);
             }
-
     }
 
     public Presentations getPresentationByName (String presentacion){
-        for (int i = 0; i<presentationsList.size(); i++){
-            if (presentationsList.get(i).getPresentacion().equals(presentacion)){
-                return presentationsList.get(i);
+        for (int i = 0; i< listaPresentaciones.size(); i++){
+            if (listaPresentaciones.get(i).getPresentacion().equals(presentacion)){
+                return listaPresentaciones.get(i);
             }
         }
         return null;

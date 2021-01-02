@@ -3,6 +3,10 @@ package es.ujaen.virtualpresentation.data;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+/**
+ * Clase Preferences, datos almacenados en la aplicación
+ * @author Sergio Caballero Garrido
+ */
 public class Preferences {
 
     /**
@@ -23,16 +27,13 @@ public class Preferences {
     }
 
     /**
-     * Si no se marca la opción de recordar credenciales se eliminan al cerrar la aplicación
+     * Elimina las credenciales
      * @param context
      */
     public static void deleteCredentials(Context context) {
         SharedPreferences sp = context.getSharedPreferences("default", Context.MODE_PRIVATE);
         boolean guardar = sp.getBoolean("permanente", true);
-        if (!guardar) { //Si las credenciales son temporales
-            SharedPreferences.Editor editor = sp.edit();
-            editor.clear().commit();
-        }
+        sp.edit().clear().commit();
     }
 
     /**
@@ -62,11 +63,12 @@ public class Preferences {
         editor.putString("nombreusuario",session.getNombreUsuario());
         editor.putString("presentacion", session.getPresentacion());
         editor.putInt("paginas", session.getPaginas());
+        editor.putInt("paginaInicial", 1);
         editor.commit();
     }
 
     /**
-     * Guarda los datos de sesión
+     * Actualiza los datos de sesión
      * @param context
      * @param session
      */

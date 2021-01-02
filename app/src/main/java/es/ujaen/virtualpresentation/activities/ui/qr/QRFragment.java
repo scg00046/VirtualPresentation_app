@@ -4,9 +4,7 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -25,6 +23,7 @@ import com.google.android.gms.vision.CameraSource;
 import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -63,6 +62,7 @@ public class QRFragment extends Fragment {
                 textView.setText(s);
             }
         });*/
+        MainActivity.hiddenFloatButton();
 
         if (ActivityCompat.checkSelfPermission(root.getContext(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) { //Permisos necesarios
@@ -73,6 +73,12 @@ public class QRFragment extends Fragment {
         cameraView = (SurfaceView) root.findViewById(R.id.camera_view);
         initQR(context);
         return root;
+    }
+
+    @Override
+    public void onDestroyView() {
+        MainActivity.showFloatButton();
+        super.onDestroyView();
     }
 
     public void initQR(final Context context) {
@@ -152,7 +158,7 @@ public class QRFragment extends Fragment {
 
                         try {
                             JSONObject tokenJson = new JSONObject(token);
-                            Session sqr = Session.sesionJSON(tokenJson); //Sesión del QR
+                            Session sqr = Session.sessionFromJSON(tokenJson); //Sesión del QR
                             Log.i("QR_sesionRecived","Sesion:"+sqr.getNombreSesion()+" Pres: "+sqr.getPresentacion()+" User: "+sqr.getNombreUsuario());
 
                             Session sa = Preferences.getSession(context,sqr.getNombreSesion()); //Sesión almacenada

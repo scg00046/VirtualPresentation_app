@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -39,7 +40,11 @@ public class UploadFileFragment extends Fragment {
     private UploadFileViewModel mViewModel;
 
     private TextView nombreFichero;
-    private Button seleccionar, enviar;
+    private Button seleccionar;
+    private static Button enviar;
+
+    private static int colorAccent;
+    private static int colorGrey;
 
     private Context context;
     //private Activity activity;
@@ -62,16 +67,23 @@ public class UploadFileFragment extends Fragment {
         seleccionar = root.findViewById(R.id.up_selectfile);
         nombreFichero = root.findViewById(R.id.up_namefile);
         enviar = root.findViewById(R.id.up_sendFile);
+        colorAccent = root.getResources().getColor(R.color.colorAccent);
+        colorGrey = root.getResources().getColor(R.color.colorGrey);
+
         context = root.getContext();
         User user = Preferences.getUser(context);
 
         final UploadFile upload = new UploadFile(context, user);
         permisos(); //Solicita los permisos para leer la memoria
+        activateSend(false);
 
         //Botón seleccionar
         seleccionar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                presentacionUri = Uri.EMPTY;
+                nombreFichero.setText("");
+                activateSend(false);
                 if(permisos()) {
                     Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                     intent.addCategory(Intent.CATEGORY_OPENABLE);
@@ -101,10 +113,8 @@ public class UploadFileFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        enviar.setClickable(false);
         if (requestCode == READ_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             if (data != null) {
-                //data.toUri();
                 Uri uri = data.getData();
                 String filename = getFileName(uri);
                 nombreFichero.setVisibility(View.VISIBLE);
@@ -114,7 +124,7 @@ public class UploadFileFragment extends Fragment {
                     String[] path = uri.getPath().split(":");
                     presentacionUri = Uri.parse(Environment.getExternalStorageDirectory().getPath() + File.separator + path[1]);
                     Log.i("SelectFile", "Uri original: "+uri+"\nuri modificada: "+presentacionUri);
-                    enviar.setClickable(true);
+                    activateSend(true);
                 } else if (uri.getAuthority().startsWith("com.android.providers")) { //Ruta de caché
                     nombreFichero.setText("Seleccione el fichero desde el directorio, no desde caché");
                 }
@@ -200,4 +210,17 @@ public class UploadFileFragment extends Fragment {
         }
     }
 
+    /**
+     * Activa o desactiva el botón para eliminar presentación
+     * @param activar
+     */
+    public static void activateSend(boolean activar){
+        enviar.setClickable(activar);
+        enviar.setEnabled(activar);
+        if (activar){
+            enviar.setBackgroundTintList(ColorStateList.valueOf(colorAccent));
+        }else {
+            enviar.setBackgroundTintList(ColorStateList.valueOf(colorGrey));
+        }
+    }
 }

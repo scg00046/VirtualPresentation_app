@@ -26,11 +26,13 @@
         android:id="@+id/sessionname"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginVertical="15dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:layout_marginVertical="15dp"
+        android:digits="@string/session_name_filter"
         android:hint="@string/sesion_edit_name"
         android:inputType="text"
+        android:focusable="false"
         android:paddingHorizontal="20dp"
         android:paddingVertical="12dp"
         android:text="nuevaSesion" />
@@ -57,12 +59,13 @@
         android:textColor="@color/colorPrimary" />
 
     <TextView
+        android:id="@+id/sessionDescription"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="10dp"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
-        android:text="Si ya existe una sesión con ese nombre y ese usuario pero otra presentación se actualizará en el servidor"
+        android:text="@string/create_session_description"
         />
 
 </LinearLayout>

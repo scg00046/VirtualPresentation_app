@@ -6,6 +6,10 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * Clase Session, parámetros de las sesiones creadas en la aplicación
+ * @author Sergio Caballero Garrido
+ */
 public class Session {
     private String nombreUsuario;
     private String nombreSesion;
@@ -24,7 +28,6 @@ public class Session {
         this.nombreUsuario = nombreUsuario;
         this.nombreSesion = nombreSesion;
         this.presentacion = presentacion;
-        //this.paginas = paginas;
     }
 
     public String getNombreUsuario() {
@@ -51,9 +54,14 @@ public class Session {
         this.paginaInicio = paginaInicio;
     }
 
-    public static Session sesionJSON (JSONObject s) throws JSONException {
+    /**
+     * Crea un objeto Session a partir de un objeto JSON
+     * @param s sesión en formato json
+     * @return objeto session
+     * @throws JSONException
+     */
+    public static Session sessionFromJSON(JSONObject s) throws JSONException {
         Log.i("Sesion_Json","Convirtiendo texto recibido");
-        //{"nombreusuario":"admin","nombresesion":"admin","presentacion":"Presentacion de ejemplo.pdf"}
         String nombreUsuario = s.getString("nombreusuario");
         String nombreSesion = s.getString("nombresesion");
         String presentacion = s.getString("presentacion");
