@@ -1,6 +1,7 @@
 package es.ujaen.virtualpresentation.connection;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -9,6 +10,7 @@ import org.json.JSONObject;
 
 import java.net.URISyntaxException;
 
+import es.ujaen.virtualpresentation.activities.MainActivity;
 import es.ujaen.virtualpresentation.activities.PresentationActivity;
 import es.ujaen.virtualpresentation.data.Constant;
 import es.ujaen.virtualpresentation.data.Preferences;
@@ -18,6 +20,9 @@ import es.ujaen.virtualpresentation.data.User;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
+
+import static es.ujaen.virtualpresentation.activities.PresentationActivity.buttonsClickable;
+import static es.ujaen.virtualpresentation.activities.PresentationActivity.snackbarReconnection;
 
 /**
  * Clase SocketIO, conexión con el servidor para comunicación mediante socketIO
@@ -29,12 +34,15 @@ public class SocketIO extends Thread {
     private Activity activity;
     private Session sesion;
     private User usuario;
+    private String nombreSesion;
 
     public SocketIO(Activity activity, User usuario, Session sesion) {
         this.activity = activity;
         this.usuario = usuario;
         this.sesion = sesion;
-        //start();
+        this.nombreSesion = sesion.getSesionCodigo();
+
+        start();
         /*Log.i("SocketCrear","Creando del socket...");
         try {
             socket = IO.socket("http://192.168.1.10:8080");
@@ -58,16 +66,21 @@ public class SocketIO extends Thread {
         //IO.Options opts = new IO.Options();
 
         try {
+            Log.i("SOCKET", "start: try");
             socket = IO.socket(Constant.SERVER/*,opts*/);
 
             socket.on(Socket.EVENT_CONNECT, onConnect); //Evento Conexión
             socket.on(Socket.EVENT_DISCONNECT, onDisconnect); //Evento desconexión
             socket.on(Socket.EVENT_CONNECT_ERROR, onConnectError); //Error de conexión
-            socket.on(sesion.getNombreSesion(), newMessageListner); //Recepción de mensajes
+            socket.on(nombreSesion, newMessageListner); //Recepción de mensajes
             //socket.on(Constant.ROOM_SOCKET, newMessageListner);
             socket.connect();    //Conexión del socket con el servidor
             Thread.sleep(500);
-            Log.i("SocketCrear","Socket creado, usuario: "+usuario.getNombreusuario()+", sesion: "+sesion.getNombreSesion());
+            Log.i("SocketCrear","Socket creado, usuario: "+usuario.getNombreusuario()+", sesion: "+nombreSesion);
+            do {
+                checkConnection();
+            } while (!isConnected());
+            Log.i("SOCKET", "finish");
             //sendMessage("OK");
             //Log.i("SocketCrear","Socket abierto (Ok enviado)");
             //setListening();
@@ -81,7 +94,6 @@ public class SocketIO extends Thread {
         super.interrupt();
         stopSesion();
     }
-
 
 
     private Emitter.Listener onConnectError = new Emitter.Listener() {
@@ -138,7 +150,11 @@ public class SocketIO extends Thread {
                                 Toast.makeText(activity, "Comando no reconocido", Toast.LENGTH_SHORT).show();
                             } else if (mensaje.equals("salir")){
                                 Preferences.refreshSession(activity.getApplicationContext(), sesion, PresentationActivity.getPaginaActual());
-                                PresentationActivity.snackbarReconnection("Se ha cerrado la presentación del navegador", "Reconectar");
+                                snackbarReconnection("Se ha cerrado la presentación del navegador", "Salir");
+                                Intent intent = new Intent(activity, MainActivity.class);
+                                intent.putExtra("qr", true);
+                                activity.startActivity(intent);
+                                activity.finish();
                             }
                         }
                     } catch (JSONException e) {
@@ -149,6 +165,35 @@ public class SocketIO extends Thread {
         } //Fin call()
     }; //Fin listener
 
+
+    /**
+     * Comprueba que se ha conectado el socket, en caso negativo preguntará si desea reintentarlo
+     */
+    private void checkConnection(){
+        if (!isConnected()){
+            snackbarReconnection("No se ha conectado correctamente", "Reintentar");
+        } else {
+            startSession();
+        }
+    }
+
+    /**
+     * Inicia la sesión
+     */
+    public void startSession(){
+        sendMessage("OK");
+        int numero = sesion.getPaginaInicio(); //No lo recibe correctamente por el tiempo de espera
+        Log.i("Socket", "startSession: pagina numero"+numero);
+        try {
+            Thread.sleep(500);
+            if (numero > 1) {
+                sendMessage("pnum-" + numero);
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     /**
      * Envío de mensajes (comandos) al servidor
      * @param texto
@@ -157,7 +202,7 @@ public class SocketIO extends Thread {
         Log.i("SocketPreSend","Enviando mensaje ...");
         JSONObject mensaje = new JSONObject();
         try {
-            mensaje.put("sesion", sesion.getNombreSesion());
+            mensaje.put("sesion", nombreSesion);
             mensaje.put("usuario", usuario.getNombreusuario());
             mensaje.put("mensaje", texto);
             if (socket.connected()) { //Comprueba que está conectado el socket
@@ -178,8 +223,9 @@ public class SocketIO extends Thread {
         Log.i("SocketPreSend","Enviando mensaje ...");
         JSONObject mensaje = new JSONObject();
         try {
-            mensaje.put("sesion", sesion.getNombreSesion());
-            mensaje.put("usuario", usuario.getNombreusuario()+"-nota");
+            mensaje.put("sesion", nombreSesion);
+            //mensaje.put("usuario", usuario.getNombreusuario()+"-nota");
+            mensaje.put("usuario", usuario.getNombreusuario());
             mensaje.put("fijar", fijarnota);
             mensaje.put("nota", texto);
             if (socket.connected()) { //Comprueba que está conectado el socket
@@ -204,7 +250,7 @@ public class SocketIO extends Thread {
     }
 
     public void setListening () {
-        socket.on(sesion.getNombreSesion(), new Emitter.Listener() {
+        socket.on(nombreSesion, new Emitter.Listener() {
             @Override
             public void call(Object... args) {
                 Log.i("SocketReceive", "Recibido:: "+args);

@@ -66,8 +66,8 @@ public class HomeFragment extends Fragment {
         enviaSesion = root.findViewById(R.id.sendSession);
         descipcion = root.findViewById(R.id.sessionDescription);
 
-        colorAccent = root.getResources().getColor(R.color.colorAccent);
-        colorGrey = root.getResources().getColor(R.color.colorGrey);
+        colorAccent = root.getResources().getColor(R.color.colorAccent, context.getTheme());
+        colorGrey = root.getResources().getColor(R.color.colorGrey, context.getTheme());
 
         List<String> defSpinner = new ArrayList<>();
         defSpinner.add("No hay presentaciones para " + user.getNombreusuario());

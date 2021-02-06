@@ -16,6 +16,7 @@ public class Session {
     private String presentacion;
     private int paginas;
     private int paginaInicio;
+    private String codigo;
 
     public Session(String nombreUsuario, String nombreSesion, String presentacion, int paginas) {
         this.nombreUsuario = nombreUsuario;
@@ -24,10 +25,11 @@ public class Session {
         this.paginas = paginas;
     }
 
-    public Session(String nombreUsuario, String nombreSesion, String presentacion) {
+    public Session(String nombreUsuario, String nombreSesion, String presentacion, String codigo) {
         this.nombreUsuario = nombreUsuario;
         this.nombreSesion = nombreSesion;
         this.presentacion = presentacion;
+        this.codigo = codigo;
     }
 
     public String getNombreUsuario() {
@@ -54,8 +56,20 @@ public class Session {
         this.paginaInicio = paginaInicio;
     }
 
+    public String getCodigo() {
+        return codigo;
+    }
+
+    public void setCodigo(String codigo) {
+        this.codigo = codigo;
+    }
+
+    public String getSesionCodigo(){
+        return nombreSesion+"_"+codigo;
+    }
+
     /**
-     * Crea un objeto Session a partir de un objeto JSON
+     * Crea un objeto Session a partir de un objeto JSON recibido por el QR
      * @param s sesión en formato json
      * @return objeto session
      * @throws JSONException
@@ -65,7 +79,8 @@ public class Session {
         String nombreUsuario = s.getString("nombreusuario");
         String nombreSesion = s.getString("nombresesion");
         String presentacion = s.getString("presentacion");
-        Session sesion = new Session(nombreUsuario,nombreSesion,presentacion);
+        String codigo = s.getString("codigo");
+        Session sesion = new Session(nombreUsuario,nombreSesion,presentacion, codigo);
         return sesion;
     }
 

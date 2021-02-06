@@ -56,8 +56,8 @@ public class DeleteFragment extends Fragment {
         presList = root.findViewById(R.id.presentationList);
         delete = root.findViewById(R.id.delete);
 
-        colorAccent = root.getResources().getColor(R.color.colorAccent);
-        colorGrey = root.getResources().getColor(R.color.colorGrey);
+        colorAccent = root.getResources().getColor(R.color.colorAccent, context.getTheme());
+        colorGrey = root.getResources().getColor(R.color.colorGrey, context.getTheme());
 
         List<String> def_spinner = new ArrayList<>();
         def_spinner.add("No hay presentaciones para " + user.getNombreusuario());

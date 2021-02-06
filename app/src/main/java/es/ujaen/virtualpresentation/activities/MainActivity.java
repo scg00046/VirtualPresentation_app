@@ -1,6 +1,7 @@
 package es.ujaen.virtualpresentation.activities;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.snackbar.Snackbar;
 
 import androidx.annotation.NonNull;
 import androidx.navigation.NavController;
@@ -42,6 +44,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+        //getIntent().getStringExtra("sesion");
+        boolean qr = getIntent().getBooleanExtra("qr", false);
+
 
         User u = Preferences.getUser(getApplicationContext());
         String nombre = u.getNombre() + " " + u.getApellidos();
@@ -76,6 +81,14 @@ public class MainActivity extends AppCompatActivity {
         final NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
         NavigationUI.setupActionBarWithNavController(this, navController, mAppBarConfiguration);
         NavigationUI.setupWithNavController(navigationView, navController);
+
+        if (qr){
+            navController.navigate(R.id.nav_qr);
+            View view = findViewById(R.id.drawer_layout);
+            Snackbar mySnackbar = Snackbar.make(view, "Se ha cerrado la sesión desde el navegador", Snackbar.LENGTH_LONG);
+            mySnackbar.setBackgroundTint(getResources().getColor(R.color.colorAccent, getTheme()));
+            mySnackbar.show();
+        }
 
         fab.setOnClickListener(new View.OnClickListener() {
             @Override

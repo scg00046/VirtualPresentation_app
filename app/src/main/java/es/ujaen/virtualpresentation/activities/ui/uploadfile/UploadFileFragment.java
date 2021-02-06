@@ -64,14 +64,14 @@ public class UploadFileFragment extends Fragment {
         mViewModel = ViewModelProviders.of(this).get(UploadFileViewModel.class);
         View root = inflater.inflate(R.layout.fragment_upload, container, false);
 
+        context = root.getContext();
+        User user = Preferences.getUser(context);
+
         seleccionar = root.findViewById(R.id.up_selectfile);
         nombreFichero = root.findViewById(R.id.up_namefile);
         enviar = root.findViewById(R.id.up_sendFile);
-        colorAccent = root.getResources().getColor(R.color.colorAccent);
-        colorGrey = root.getResources().getColor(R.color.colorGrey);
-
-        context = root.getContext();
-        User user = Preferences.getUser(context);
+        colorAccent = root.getResources().getColor(R.color.colorAccent, context.getTheme());
+        colorGrey = root.getResources().getColor(R.color.colorGrey, context.getTheme());
 
         final UploadFile upload = new UploadFile(context, user);
         permisos(); //Solicita los permisos para leer la memoria

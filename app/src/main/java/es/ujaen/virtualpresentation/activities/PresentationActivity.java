@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -55,19 +56,21 @@ public class PresentationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_presentation);
 
         nombreSesion = getIntent().getStringExtra("sesion");
+        String codigo = getIntent().getStringExtra("codigo");
         Log.i("PresentationActivity", "Iniciando actividad presentación, con sesión:" + nombreSesion);
         //final Context context = getApplicationContext();
         context = this;
         final User u = Preferences.getUser(context);
         s = Preferences.getSession(context, nombreSesion);
+        s.setCodigo(codigo);
         con = new Connection(context, u);
-        colorAccent = getResources().getColor(R.color.colorAccent);
+        colorAccent = getResources().getColor(R.color.colorAccent, getTheme());
 
         paginaMax = s.getPaginas();
 
         socketIO = new SocketIO(PresentationActivity.this, u, s);
-        Thread hilo =  socketIO; //TODO Revisar para que pueda hacerse en el fondo
-        hilo.start();
+//        Thread hilo =  socketIO; //TODO Revisar para que pueda hacerse en el fondo
+//        hilo.start();
 
         pmas = findViewById(R.id.pr_bt_next);
         pmenos = findViewById(R.id.pr_bt_previous);
@@ -90,31 +93,31 @@ public class PresentationActivity extends AppCompatActivity {
         view = findViewById(R.id.activityPresentation);
 
         //Para el teclado
-        final InputMethodManager inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        final InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         //Comprobación de conexión
-        if (!socketIO.isConnected()){
-            snackbarReconnection("No se ha conectado correctamente", "Reintentar");
-        } else {
-            socketIO.sendMessage("OK");
-            int numero = s.getPaginaInicio(); //No lo recibe correctamente por el tiempo de espera
-            try {
-                Thread.sleep(200);
-                if (numero > 1) {
-                    socketIO.sendMessage("pnum-" + numero);
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
+//        if (!socketIO.isConnected()){
+//            snackbarReconnection("No se ha conectado correctamente", "Reintentar");
+//        } else {
+//            socketIO.sendMessage("OK");
+//            int numero = s.getPaginaInicio(); //No lo recibe correctamente por el tiempo de espera
+//            try {
+//                Thread.sleep(200);
+//                if (numero > 1) {
+//                    socketIO.sendMessage("pnum-" + numero);
+//                }
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
+//        }
 
         //Página específica
         pagina.setOnEditorActionListener(new TextView.OnEditorActionListener() {
             @Override
             public boolean onEditorAction(TextView textView, int i, KeyEvent keyEvent) {
-                if (i == EditorInfo.IME_ACTION_DONE){
+                if (i == EditorInfo.IME_ACTION_DONE) {
                     int numero = Integer.parseInt(pagina.getText().toString().trim());
-                    Log.i("Pagina", "Pagina obtenida "+numero);
+                    Log.i("Pagina", "Pagina obtenida " + numero);
                     if (numero >= 1 && numero <= paginaMax) { //Número correcto
                         pagina.setBackgroundTintList(ColorStateList.valueOf(colorAccent));
                         socketIO.sendMessage("pnum-" + numero);
@@ -222,10 +225,10 @@ public class PresentationActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String nuevaNota = nota.getText().toString().trim();
-                if (nuevaNota.length()>0){
-                    nuevaNota = nuevaNota.replaceAll(System.getProperty("line.separator"),"<br>");
-                    Log.i("EnviaNota", "Nota: '"+nuevaNota+"'");
-                    socketIO.sendNote( fijarnota.isChecked(), nuevaNota);
+                if (nuevaNota.length() > 0) {
+                    nuevaNota = nuevaNota.replaceAll(System.getProperty("line.separator"), "<br>");
+                    Log.i("EnviaNota", "Nota: '" + nuevaNota + "'");
+                    socketIO.sendNote(fijarnota.isChecked(), nuevaNota);
                     fijarnota.setChecked(false);
                     nota.getText().clear();
                     inputMethodManager.hideSoftInputFromWindow(enviaNota.getWindowToken(), 0); //cierra el teclado
@@ -259,7 +262,7 @@ public class PresentationActivity extends AppCompatActivity {
 
     }
 
-    private void salir(){
+    private void salir() {
         super.onBackPressed();
         socketIO.sendMessage("FIN");
         Intent intent = new Intent(PresentationActivity.this, MainActivity.class);
@@ -274,7 +277,7 @@ public class PresentationActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if(socketIO.isConnected()) {
+        if (socketIO.isConnected()) {
             socketIO.sendMessage("FIN");
         }
         socketIO.interrupt();
@@ -288,17 +291,18 @@ public class PresentationActivity extends AppCompatActivity {
         pagina.setHint(paginaActual + "/" + paginaMax);
         s.setPaginaInicio(paginaActual);
     }
-    public static int getPaginaActual(){
+
+    public static int getPaginaActual() {
         return paginaActual;
     }
 
-    private static void buttonsClickable(boolean click) {
-        if (!click){
+    public static void buttonsClickable(boolean click) {
+        if (!click) {
             pagina.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
-            nota.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
+            //nota.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
         } else {
             pagina.setBackgroundTintList(ColorStateList.valueOf(colorAccent));
-            nota.setBackgroundTintList(ColorStateList.valueOf(colorAccent));
+            //nota.setBackgroundTintList(ColorStateList.valueOf(colorAccent));
         }
         pmas.setEnabled(click);
         pagina.setEnabled(click);
@@ -319,30 +323,36 @@ public class PresentationActivity extends AppCompatActivity {
 
     /**
      * Método para mostrar un Snackbar con el que se podrá volver a conectar a la presentación
+     *
      * @param titulo descripción del error a mostrar
      * @param accion texto de acción a realizar
      */
-    public static void snackbarReconnection(String titulo, String accion){
+    public static void snackbarReconnection(String titulo, final String accion) {
         buttonsClickable(false);
-        Snackbar mySnackbar = Snackbar.make(view, titulo, Snackbar.LENGTH_INDEFINITE);
-        mySnackbar.setAction(accion, new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if(socketIO.isConnected()){
-                    socketIO.sendMessage("OK");
-                    int numero = s.getPaginaInicio();
-                    try {
-                        Thread.sleep(200); //Tiempo de espera necesario entre peticiones
-                        if (numero > 1) {
-                            socketIO.sendMessage("pnum-" + numero);
-                        }
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+        final Snackbar mySnackbar = Snackbar.make(view, titulo, Snackbar.LENGTH_INDEFINITE);
+        if (accion.equals("Salir")) {
+            buttonsClickable(false);
+        } else if (accion.equals("Reintentar")) {
+            mySnackbar.setAction(accion, new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    if (socketIO.isConnected()) {
+                        socketIO.startSession();
+//                        socketIO.sendMessage("OK");
+//                        int numero = s.getPaginaInicio();
+//                        try {
+//                            Thread.sleep(200); //Tiempo de espera necesario entre peticiones
+//                            if (numero > 1) {
+//                                socketIO.sendMessage("pnum-" + numero);
+//                            }
+//                        } catch (InterruptedException e) {
+//                            e.printStackTrace();
+//                        }
+                        buttonsClickable(true);
                     }
-                    buttonsClickable(true);
                 }
-            }
-        });
+            });
+        }
         mySnackbar.show();
     }
 

@@ -32,7 +32,6 @@
         android:digits="@string/session_name_filter"
         android:hint="@string/sesion_edit_name"
         android:inputType="text"
-        android:focusable="false"
         android:paddingHorizontal="20dp"
         android:paddingVertical="12dp"
         android:text="nuevaSesion" />

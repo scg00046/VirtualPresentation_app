@@ -183,7 +183,6 @@
         android:layout_marginBottom="50dp"
         android:background="@drawable/btn_round"
         android:text="Abrir/Cerrar notas"
-        android:textColor="#3498DB"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/pr_bt_delete_notes"
         app:layout_constraintStart_toStartOf="parent" />
@@ -196,7 +195,6 @@
         android:layout_marginBottom="50dp"
         android:background="@drawable/btn_round"
         android:text="Eliminar notas"
-        android:textColor="@color/colorErrorBackg"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/pr_bt_open_notes" />

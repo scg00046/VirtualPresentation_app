@@ -142,7 +142,6 @@ public class QRFragment extends Fragment {
             public void receiveDetections(Detector.Detections<Barcode> detections) {
                 //boolean hecho = false;
                 final SparseArray<Barcode> barcodes = detections.getDetectedItems();
-                Toast.makeText(getActivity().getApplicationContext(),"INICIANDO QR", Toast.LENGTH_SHORT).show();
                 if (barcodes.size() > 0) {
 
                     // obtenemos el token
@@ -166,10 +165,9 @@ public class QRFragment extends Fragment {
                             //Comprueba nombre de usuario y presentación
                             if (sqr.getNombreUsuario().equals(sa.getNombreUsuario()) && sqr.getPresentacion().equals(sa.getPresentacion())){
                                 Log.i("QR_Sesion", "Sesión correcta");
-                                Toast.makeText(QRFragment.this.getContext(),"Sesión ok", Toast.LENGTH_LONG).show(); //TODO revisar, no lo muestra
                                 //hecho = true;
-                                //TODO evitar que haga varias veces el intent
-                                nextActivity(context, sqr.getNombreSesion());
+                                String codigo = sqr.getCodigo();
+                                nextActivity(context, sqr.getNombreSesion(), codigo);
                             }
 
                         } catch (JSONException e) {
@@ -195,9 +193,10 @@ public class QRFragment extends Fragment {
         }); //Fin barcode.setProcessor
     }//Fin initQR
 
-    private void nextActivity(Context context, String nombreSesion){
+    private void nextActivity(Context context, String nombreSesion, String codigo){
         Intent intent = new Intent(context, PresentationActivity.class);
         intent.putExtra("sesion",nombreSesion);
+        intent.putExtra("codigo", codigo);
         getContext().startActivity(intent);
         getActivity().finish();
     }
