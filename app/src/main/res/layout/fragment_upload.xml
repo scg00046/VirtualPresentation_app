@@ -12,13 +12,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
-        android:text="Seleccione la presentación desde la memoria predeterminada." />
+        android:text="Seleccione el fichero PDF a subir." />
 
     <Button
         android:id="@+id/up_selectfile"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
+        android:layout_margin="15dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginRight="25dp"
         android:background="@drawable/btn_bg"
         android:textColor="@color/colorPrimary"
         android:text="@string/upload_select" />
@@ -33,9 +35,11 @@
 
     <Button
         android:id="@+id/up_sendFile"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
+        android:layout_marginLeft="25dp"
+        android:layout_marginRight="25dp"
         android:background="@drawable/btn_bg"
         android:text="@string/upload_send"
         android:textColor="@color/colorPrimary" />

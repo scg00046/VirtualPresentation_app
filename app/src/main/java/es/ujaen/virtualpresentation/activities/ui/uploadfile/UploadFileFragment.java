@@ -47,15 +47,10 @@ public class UploadFileFragment extends Fragment {
     private static int colorGrey;
 
     private Context context;
-    //private Activity activity;
 
     private static final int READ_REQUEST_CODE = 42;
 
-    private Uri presentacionUri;
-
-    /*public static UploadFileFragment newInstance() {
-        return new UploadFileFragment();
-    }*/
+    private String presentacionStr;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -81,7 +76,7 @@ public class UploadFileFragment extends Fragment {
         seleccionar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                presentacionUri = Uri.EMPTY;
+                presentacionStr = "";
                 nombreFichero.setText("");
                 activateSend(false);
                 if(permisos()) {
@@ -96,7 +91,8 @@ public class UploadFileFragment extends Fragment {
         enviar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                upload.subir(presentacionUri, nombreFichero.getText().toString());
+                Log.i("UPLOAD", "onClick: present"+presentacionStr+" nombre fichero: "+nombreFichero.getText().toString());
+                upload.subir(presentacionStr, nombreFichero.getText().toString());
             }
         });
 
@@ -119,15 +115,8 @@ public class UploadFileFragment extends Fragment {
                 String filename = getFileName(uri);
                 nombreFichero.setVisibility(View.VISIBLE);
                 nombreFichero.setText(filename);
-                if (uri.getAuthority().startsWith("com.android.externalstorage")) { //Ruta de directorios
-
-                    String[] path = uri.getPath().split(":");
-                    presentacionUri = Uri.parse(Environment.getExternalStorageDirectory().getPath() + File.separator + path[1]);
-                    Log.i("SelectFile", "Uri original: "+uri+"\nuri modificada: "+presentacionUri);
-                    activateSend(true);
-                } else if (uri.getAuthority().startsWith("com.android.providers")) { //Ruta de caché
-                    nombreFichero.setText("Seleccione el fichero desde el directorio, no desde caché");
-                }
+                presentacionStr = data.getData().toString();
+                activateSend(true);
             } else {
                 nombreFichero.setText("No se ha seleccionado ningun fichero válido");
             }
