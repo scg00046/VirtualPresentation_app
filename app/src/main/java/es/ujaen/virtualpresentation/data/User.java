@@ -20,6 +20,8 @@ public class User {
     private String nombreusuario;
     private String nombre;
     private String apellidos;
+    private String mail;
+    private String token;
     //TODO revisar listas
     private List<Presentations> listaPresentaciones; //Almacena los datos de las presentaciones
     private List<String> listaPresentacionesString; //Usada para el spinner
@@ -31,11 +33,12 @@ public class User {
      * @param nombre
      * @param apellidos
      */
-    public User(int id, String nombreusuario, String nombre, String apellidos) {
+    public User(int id, String nombreusuario, String nombre, String apellidos, String token) {
         this.id = id;
         this.nombreusuario = nombreusuario;
         this.nombre = nombre;
         this.apellidos = apellidos;
+        this.token = token;
         this.listaPresentaciones = new ArrayList<>();
         this.listaPresentacionesString = new ArrayList<>();
     }
@@ -50,11 +53,18 @@ public class User {
         this.nombreusuario = userJson.getString("nombreusuario");
         this.nombre = userJson.getString("nombre");
         this.apellidos = userJson.getString("apellidos");
+        this.token = userJson.getString("token");
         this.listaPresentaciones = new ArrayList<>();
         this.listaPresentacionesString = new ArrayList<>();
     }
 
     public User() {
+    }
+
+    public User(String nombreusuario, String nombre, String apellidos) {
+        this.nombreusuario = nombreusuario;
+        this.nombre = nombre;
+        this.apellidos = apellidos;
     }
 
     public int getId() {
@@ -83,6 +93,10 @@ public class User {
 
     public void addPresentation(int id, String nombre){
         this.listaPresentacionesString.add(nombre);
+    }
+
+    public String getToken() {
+        return token;
     }
 
     public void presentationsJSONtoList(JSONArray array) throws JSONException{

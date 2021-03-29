@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
+import es.ujaen.virtualpresentation.activities.LoginActivity;
 import es.ujaen.virtualpresentation.activities.MainActivity;
 import es.ujaen.virtualpresentation.R;
 import es.ujaen.virtualpresentation.activities.ui.delete.DeleteFragment;
@@ -196,6 +197,12 @@ public class Connection {
                 statusCode[0] = response.statusCode;
                 return super.parseNetworkResponse(response);
             }
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put(Constant.HEADER_AUT, user.getToken());
+                return headers;
+            }
         };
 
         RequestQueue requestQueue = Volley.newRequestQueue(context);
@@ -261,6 +268,12 @@ public class Connection {
                 parametros.put("presentation", presentacion);
                 return parametros;
             }
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put(Constant.HEADER_AUT, user.getToken());
+                return headers;
+            }
         };
         RequestQueue requestQueue = Volley.newRequestQueue(context);
         requestQueue.add(stringRequest);
@@ -292,9 +305,9 @@ public class Connection {
      * @param presentacion nombre de la presentación a eliminar
      */
     public void deletePresentation(final String presentacion) {
-        Log.i("DeleteParams", "Presentacion: " + presentacion + " id usuario: " + String.valueOf(user.getId()));
+        Log.i("DeleteParams", "Presentacion: " + presentacion );
         StringRequest stringRequest;
-        stringRequest = new StringRequest(Request.Method.POST, Constant.getUrlUser(user.getNombreusuario()),
+        stringRequest = new StringRequest(Request.Method.DELETE, Constant.getUrlUser(user.getNombreusuario()),
                 new Response.Listener<String>() {
 
                     @Override
@@ -312,7 +325,7 @@ public class Connection {
                     Log.i("ConnectionError", "Codigo error http: " + statusCode);
                     switch (statusCode) {
                         case 403: //Usuario no válido
-                            Toast.makeText(context, "User no registrado", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, "Usuario no registrado", Toast.LENGTH_SHORT).show();
                             break;
                         case 406: //No se han recibido datos en el servidor
                             Toast.makeText(context, "Faltan parámetros en la petición", Toast.LENGTH_SHORT).show();
@@ -336,12 +349,11 @@ public class Connection {
             }
         }) {
             @Override
-            protected Map<String, String> getParams() throws AuthFailureError { //TODO no envía los parámetros (Revisión)-PROBAR
-                // En este metodo se hace el envio de valores de la aplicacion al servidor
-                Map<String, String> parametros = new Hashtable<String, String>();
-                parametros.put("presentacion", presentacion);
-                parametros.put("id", String.valueOf(user.getId()));
-                return parametros;
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put(Constant.HEADER_AUT, user.getToken());
+                headers.put("presentacion", presentacion);
+                return headers;
             }
         };
 
@@ -378,25 +390,72 @@ public class Connection {
                 }
             }
         }) {
-            /*@Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-
-                //
-                Map<String, String> parametros = new Hashtable<String, String>();
-                parametros.put("session", sesion);
-                parametros.put("id", String.valueOf(user.getId()));
-                return parametros;
-                //return super.getParams();
-            }*/
-
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 //return super.getHeaders();
                 HashMap<String, String> headers = new HashMap<String, String>();
-                //headers.put("Content-Type", "application/json"); //TODO probar 05/10
+                headers.put(Constant.HEADER_AUT, user.getToken());
                 headers.put("session", sesion);
-                headers.put("id", String.valueOf(user.getId()) );
                 return headers;
+            }
+        };
+        RequestQueue requestQueue = Volley.newRequestQueue(context);
+        requestQueue.add(stringRequest);
+    }
+
+    public void createUser(final User u, final String pass, final String mail){
+        StringRequest stringRequest = new StringRequest(Request.Method.PUT, Constant.URL_LOGIN,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) {
+                        if (response.equals("OK")) {
+                            Toast.makeText(context, "Usuario registrado", Toast.LENGTH_SHORT).show();
+                            Log.i("CreateUser", "Se ha registrado correctamente. " + response);
+                            LoginActivity.stopLoading();
+                            LoginActivity.setUser(u.getNombreusuario());
+                        }
+
+                    }
+
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // En caso de tener algun error en la obtencion de los datos
+                Log.e("ConnectionError", "Error al iniciar sesión" + error);
+                LoginActivity.stopLoading();
+                if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
+                    int statusCode = error.networkResponse.statusCode;
+                    Log.i("ConnectionError", "Codigo error http: " + statusCode);
+                    String e = error.networkResponse.data.toString();
+                    switch (statusCode){
+                        case 401:
+                            Toast.makeText(context, "El usuario ya existe", Toast.LENGTH_SHORT).show();
+                            break;
+                        case 406:
+                            Toast.makeText(context, "No se han recibido los parámetros necesarios", Toast.LENGTH_SHORT).show();
+                            break;
+                        case 500:
+                            Toast.makeText(context, "Error en el servidor", Toast.LENGTH_SHORT).show();
+                            break;
+                        default: break;
+                    } //Fin switch
+
+                }else { //Error al realizar la conexión
+                    Log.i("ConnectionError", "No se puede conectar con el servidor");
+                    Toast.makeText(context, "No se puede conectar con el servidor", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() {
+
+                Map<String, String> parametros = new Hashtable<String, String>();
+                parametros.put("nombreusuario", u.getNombreusuario());
+                parametros.put("password", pass);
+                parametros.put("nombre", u.getNombre());
+                parametros.put("apellidos", u.getApellidos());
+                parametros.put("email", mail);
+                return parametros;
             }
         };
         RequestQueue requestQueue = Volley.newRequestQueue(context);

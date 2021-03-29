@@ -23,6 +23,7 @@ public class Preferences {
         editor.putString("nombre",u.getNombre());
         editor.putString("apellidos",u.getApellidos());
         editor.putBoolean("permanente", guardar);
+        editor.putString("token", u.getToken());
         editor.commit();
     }
 
@@ -48,7 +49,8 @@ public class Preferences {
         String usuario = sp.getString("nombreusuario", "");
         String nombre = sp.getString("nombre", "");
         String apellidos = sp.getString("apellidos", "");
-        User user = new User(id, usuario, nombre, apellidos);
+        String token = sp.getString("token", "");
+        User user = new User(id, usuario, nombre, apellidos, token);
         return user;
     }
 

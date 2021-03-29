@@ -79,7 +79,6 @@ public class DeleteFragment extends Fragment {
                 builder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        Toast.makeText(context, "Sí", Toast.LENGTH_SHORT).show();
                         con.deletePresentation(presentacion);
                     }
                 });

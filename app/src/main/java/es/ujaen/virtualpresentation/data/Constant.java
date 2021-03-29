@@ -22,6 +22,8 @@ public class Constant {
 
     public static final String ROOM_SOCKET = "virtualPresentations";
 
+    public static final String HEADER_AUT = "Autenticacion";
+
     /**
      * Obtiene la url completa para el usuario
      * @param usuario autenticado

@@ -93,9 +93,9 @@ public class UploadFile {
             Log.i("upload", "subir: inicio try UUID"+uploadId);
             new MultipartUploadRequest(context, uploadId, Constant.getUrlUser(usuario.getNombreusuario()))
                     .addFileToUpload(uriFile, "presentacion", filename)
-                    .addParameter("id", String.valueOf(usuario.getId()))
                     .setNotificationConfig(upNotification)
-                    .setMethod("POST")
+                    .setMethod("PUT")
+                    .addHeader(Constant.HEADER_AUT, usuario.getToken())
                     .setUtf8Charset()
                     .setMaxRetries(2)
                     .setDelegate(new UploadStatusDelegate() {
@@ -107,17 +107,10 @@ public class UploadFile {
                         public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception e) {
                             //messageText.setTextColor(Color.RED);
                             //messageText.setText("Error: "+e.getMessage());
-                            Log.i("UploadFile", "Error de subida: "+uploadId+"\nExcepción: "+e.getLocalizedMessage()
-                                    +"\nError Mensaje"+e.getMessage());
-                        }
-                        @Override
-                        public void onCompleted(Context context, UploadInfo uploadInfo, ServerResponse serverResponse) {
+                            Log.e("UploadFile", "onError: " + uploadId + "\nResponse code: "+serverResponse.getHttpCode());
                             int codigoResp = serverResponse.getHttpCode();
                             String mensaje = "";
                             switch (codigoResp) {
-                                case 200:
-                                    mensaje = "Presentación subida correctamente.";
-                                    break;
                                 case 400:
                                     mensaje = "No se han enviado datos";
                                     break;
@@ -131,10 +124,17 @@ public class UploadFile {
                                     mensaje = "Error en el registro";
                                     break;
                                 default:
-                                    mensaje = "Respuesta desconocida";
+                                    mensaje = "Se ha producido un error";
                                     break;
                             }
                             Toast.makeText(context,mensaje,Toast.LENGTH_SHORT).show();
+                        }
+                        @Override
+                        public void onCompleted(Context context, UploadInfo uploadInfo, ServerResponse serverResponse) {
+                            int codigoResp = serverResponse.getHttpCode();
+                            if (codigoResp == 200) {
+                                Toast.makeText(context,"Presentación subida correctamente.", Toast.LENGTH_SHORT).show();
+                            }
                             Log.i("UploadFile", "Subida Completada: "+uploadId + "Respuesta: "+ codigoResp);
                         }
                         @Override
