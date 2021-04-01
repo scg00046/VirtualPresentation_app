@@ -79,7 +79,7 @@ public class DeleteFragment extends Fragment {
                 builder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        con.deletePresentation(presentacion);
+                        con.deletePresentation(presentacion, presList);
                     }
                 });
                 builder.setNegativeButton("No", null);

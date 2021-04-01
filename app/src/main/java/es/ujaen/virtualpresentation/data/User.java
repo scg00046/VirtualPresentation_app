@@ -88,7 +88,7 @@ public class User {
     }
 
     public List<String> getListaPresentacionesString() {
-        return Collections.unmodifiableList(listaPresentacionesString);
+        return listaPresentacionesString;
     }
 
     public void addPresentation(int id, String nombre){

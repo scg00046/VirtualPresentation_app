@@ -8,6 +8,7 @@ import org.json.JSONObject;
 
 /**
  * Clase Session, parámetros de las sesiones creadas en la aplicación
+ *
  * @author Sergio Caballero Garrido
  */
 public class Session {
@@ -64,23 +65,24 @@ public class Session {
         this.codigo = codigo;
     }
 
-    public String getSesionCodigo(){
-        return nombreSesion+"_"+codigo;
+    public String getSesionCodigo() {
+        return nombreSesion + "_" + codigo;
     }
 
     /**
      * Crea un objeto Session a partir de un objeto JSON recibido por el QR
+     *
      * @param s sesión en formato json
      * @return objeto session
      * @throws JSONException
      */
     public static Session sessionFromJSON(JSONObject s) throws JSONException {
-        Log.i("Sesion_Json","Convirtiendo texto recibido");
-        String nombreUsuario = s.getString("nombreusuario");
-        String nombreSesion = s.getString("nombresesion");
+        Log.i("Sesion_Json", "Convirtiendo texto recibido");
+        String nombreUsuario = s.getString("usuario");
+        String nombreSesion = s.getString("sesion");
         String presentacion = s.getString("presentacion");
         String codigo = s.getString("codigo");
-        Session sesion = new Session(nombreUsuario,nombreSesion,presentacion, codigo);
+        Session sesion = new Session(nombreUsuario, nombreSesion, presentacion, codigo);
         return sesion;
     }
 

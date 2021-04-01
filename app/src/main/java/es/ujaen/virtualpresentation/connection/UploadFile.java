@@ -114,14 +114,17 @@ public class UploadFile {
                                 case 400:
                                     mensaje = "No se han enviado datos";
                                     break;
-                                case 403:
-                                    mensaje = "Usuario no registrado";
+                                case 401:
+                                    mensaje = "Autenticación incorrecta";
                                     break;
-                                case 406:
+                                case 403:
+                                    mensaje = "Los datos enviados son incorrectos o incompletos";
+                                    break;
+                                case 409:
                                     mensaje = "La presentación ya existe";
                                     break;
                                 case 500:
-                                    mensaje = "Error en el registro";
+                                    mensaje = "Error en el servidor";
                                     break;
                                 default:
                                     mensaje = "Se ha producido un error";

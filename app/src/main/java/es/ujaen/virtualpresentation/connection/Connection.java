@@ -31,6 +31,7 @@ import org.json.JSONObject;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 
 import es.ujaen.virtualpresentation.activities.LoginActivity;
@@ -111,19 +112,10 @@ public class Connection {
                 if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
                     int statusCode = error.networkResponse.statusCode;
                     Log.i("ConnectionError", "Codigo error http: " + error.networkResponse.statusCode);
-                    switch (statusCode) {
-                        case 400:
-                            Toast.makeText(context, "No se han enviado datos al servidor", Toast.LENGTH_SHORT).show();
-                            break;
-                        case 401:
-                            Toast.makeText(context, "Nombre de usuario y/o contraseñas incorrectos", Toast.LENGTH_SHORT).show();
-                            break;
-                        case 500:
-                            Toast.makeText(context, "Se ha producido un error en el servidor", Toast.LENGTH_SHORT).show();
-                            break;
-                        default:
-                            Toast.makeText(context, "Error desconocido", Toast.LENGTH_SHORT).show();
-                            break;
+                    if (statusCode == 401) {
+                        Toast.makeText(context, "Nombre de usuario y/o contraseñas incorrectos", Toast.LENGTH_SHORT).show();
+                    } else {
+                        responseCode(statusCode);
                     }
                 } else { //Error al realizar la conexión
                     Log.i("ConnectionError", "No se puede conectar con el servidor");
@@ -158,22 +150,25 @@ public class Connection {
                     @Override
                     public void onResponse(String response) { //Respuesta sin errores
                         Log.i("GetPresentaciones", "(" + statusCode[0] + ")" + response);
-                        //Toast.makeText(context, "Lista de presentaciones recibidas", Toast.LENGTH_LONG).show();
-                        try {
-                            user.presentationsJSONtoList(new JSONArray(response));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
+                        if (statusCode[0] == 200) {
+                            try {
+                                user.presentationsJSONtoList(new JSONArray(response));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                            Log.i("GetPresentacionesList", user.getListaPresentacionesString().toString());
+                            ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
+                                    android.R.layout.simple_spinner_dropdown_item, user.getListaPresentacionesString());
+                            presList.setAdapter(adapter);
+                            if (fragmento == 0) {
+                                HomeFragment.activateSendSession(true);
+                            } else if (fragmento == 1) {
+                                DeleteFragment.activateDelete(true);
+                            }
+                            Log.i("GetPresentacionesList", "Tamaño lista: " + user.getListaPresentacionesString().size());
+                        } else {
+                            Toast.makeText(context, "No hay presentaciones para el usuario", Toast.LENGTH_SHORT).show();
                         }
-                        Log.i("GetPresentacionesList", user.getListaPresentacionesString().toString());
-                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
-                                android.R.layout.simple_spinner_dropdown_item, user.getListaPresentacionesString());
-                        presList.setAdapter(adapter);
-                        if (fragmento == 0) {
-                            HomeFragment.activateSendSession(true);
-                        } else if (fragmento == 1){
-                            DeleteFragment.activateDelete(true);
-                        }
-                        Log.i("GetPresentacionesList", "Tamaño lista: " + user.getListaPresentacionesString().size());
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -182,11 +177,7 @@ public class Connection {
                 Log.w("ConnectionError", "Error al pedir las presentaciones, " + error.toString());
                 if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
                     int statusCode = error.networkResponse.statusCode;
-                    if (statusCode == 401) {
-                        Toast.makeText(context, "No hay presentaciones para el usuario", Toast.LENGTH_SHORT).show();
-                    } else if (statusCode == 500) {
-                        Toast.makeText(context, "Error en el servidor", Toast.LENGTH_SHORT).show();
-                    }
+                    responseCode(statusCode);
                 } else { //Error en la conexión
                     Toast.makeText(context, "Error en la conexión", Toast.LENGTH_SHORT).show();
                 }
@@ -197,6 +188,7 @@ public class Connection {
                 statusCode[0] = response.statusCode;
                 return super.parseNetworkResponse(response);
             }
+
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 HashMap<String, String> headers = new HashMap<String, String>();
@@ -227,10 +219,22 @@ public class Connection {
                     public void onResponse(String response) {
 
                         Log.i("ConnectionSession", "(" + statusCode[0] + ") Se ha creado la sesión. " + response);
-                        if (savePreferencesSession(sesion,presentacion,view)){
-                            Snackbar.make(view, "Se ha creado la sesión", Snackbar.LENGTH_LONG).show();
+                        String mensaje = "";
+                        switch (response) {
+                            case "Creada":
+                                mensaje = "Se ha creado la sesión";
+                                break;
+                            case "Sin cambios":
+                                mensaje = "Se ha guardado la sesión";
+                                break;
+                            case "Actualizada":
+                                mensaje = "Se ha actualizado la sesión con otra presentación";
+                                break;
                         }
-                        //TODO cambiar de fragmento
+                        if (savePreferencesSession(sesion, presentacion, view)) {
+                            Snackbar.make(view, mensaje, Snackbar.LENGTH_LONG).show();
+                        }
+
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -238,25 +242,7 @@ public class Connection {
                 Log.w("ConnectionError", "Error al crear sesión" + error);
                 if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
                     int statusCode = error.networkResponse.statusCode;
-                    switch (statusCode) {
-                        case 400: //La sesión ya existe
-                            Log.w("CreateSessionError", "La sesión ya existe en el servidor.");
-                            if (savePreferencesSession(sesion,presentacion,view)) {
-                                Snackbar.make(view, "Se ha guardado la sesión", Snackbar.LENGTH_LONG).show();
-                            }
-                            break;
-                        case 301: //Actualización de la sesión
-                            Log.w("CreateSessionError", "La sesión ya existe en el servidor con otra presentación. Se ha actualizado");
-                            if (savePreferencesSession(sesion,presentacion,view)) {
-                                Snackbar.make(view, "Se ha actualizado la sesión a otra presentación", Snackbar.LENGTH_LONG).show();
-                            }
-                            break;
-                        case 406: //No se han recibido datos en el servidor
-                            Snackbar.make(view, "No se han enviado datos", Snackbar.LENGTH_LONG).show();
-                            break;
-                        default:
-                            break;
-                    }//Fin switch
+                    responseCode(statusCode);
                 }
             }//Fin on error response
         }) {
@@ -268,6 +254,7 @@ public class Connection {
                 parametros.put("presentation", presentacion);
                 return parametros;
             }
+
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 HashMap<String, String> headers = new HashMap<String, String>();
@@ -280,14 +267,14 @@ public class Connection {
     }
 
     @SuppressLint("ResourceAsColor")
-    private boolean savePreferencesSession (String sesion, String presentacion, View view){
+    private boolean savePreferencesSession(String sesion, String presentacion, View view) {
         boolean resultado;
         Presentations present = user.getPresentationByName(presentacion);
         if (present != null) { //TODO revisar si es necesario
             Session session = new Session(user.getNombreusuario(), sesion, presentacion, present.getPaginas());
             Preferences.saveSession(context, session);
             TextView descripcion = (TextView) view.findViewById(R.id.sessionDescription);
-            String url = Constant.getUrlUser(user.getNombreusuario())+"/"+sesion;
+            String url = Constant.getUrlUser(user.getNombreusuario()) + "/" + sesion;
             descripcion.setText(url);
             resultado = true;
         } else {
@@ -304,8 +291,8 @@ public class Connection {
      *
      * @param presentacion nombre de la presentación a eliminar
      */
-    public void deletePresentation(final String presentacion) {
-        Log.i("DeleteParams", "Presentacion: " + presentacion );
+    public void deletePresentation(final String presentacion, final Spinner presList) {
+        Log.i("DeleteParams", "Presentacion: " + presentacion);
         StringRequest stringRequest;
         stringRequest = new StringRequest(Request.Method.DELETE, Constant.getUrlUser(user.getNombreusuario()),
                 new Response.Listener<String>() {
@@ -314,6 +301,11 @@ public class Connection {
                     public void onResponse(String response) {
                         Log.i("DeletePresentation", "Se ha eliminado correctamente. " + response);
                         Toast.makeText(context, response, Toast.LENGTH_SHORT).show();
+                        List<String> pres = user.getListaPresentacionesString();
+                        pres.remove(presentacion);
+                        ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
+                                android.R.layout.simple_spinner_dropdown_item, pres);
+                        presList.setAdapter(adapter);
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -323,25 +315,7 @@ public class Connection {
                 if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
                     int statusCode = error.networkResponse.statusCode;
                     Log.i("ConnectionError", "Codigo error http: " + statusCode);
-                    switch (statusCode) {
-                        case 403: //Usuario no válido
-                            Toast.makeText(context, "Usuario no registrado", Toast.LENGTH_SHORT).show();
-                            break;
-                        case 406: //No se han recibido datos en el servidor
-                            Toast.makeText(context, "Faltan parámetros en la petición", Toast.LENGTH_SHORT).show();
-                            break;
-                        case 500: //No se ha podido eliminar del servidor
-                            Toast.makeText(context,
-                                    "Se ha producido un error en el servidor y no se ha eliminado la presentación",
-                                    Toast.LENGTH_SHORT).show();
-                            break;
-                        case 503: //No se ha podido eliminar de la bbdd
-                            Toast.makeText(context, "No se ha podido eliminar en la base de datos", Toast.LENGTH_SHORT).show();
-                            break;
-                        default:
-                            Toast.makeText(context, "Error desconocido", Toast.LENGTH_SHORT).show();
-                            break;
-                    }
+                    responseCode(statusCode);
                 } else { //Error al realizar la conexión
                     Log.i("ConnectionError", "No se puede conectar con el servidor");
                     Toast.makeText(context, "No se puede conectar con el servidor", Toast.LENGTH_SHORT).show();
@@ -363,9 +337,10 @@ public class Connection {
 
     /**
      * Elimina una sesión creada del servidor
+     *
      * @param sesion
      */
-    public void deleteSession (final String sesion){
+    public void deleteSession(final String sesion) {
         StringRequest stringRequest = new StringRequest(Request.Method.DELETE,
                 Constant.getUrlSessionUser(user.getNombreusuario()),
                 new Response.Listener<String>() {
@@ -384,7 +359,8 @@ public class Connection {
                 if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
                     int statusCode = error.networkResponse.statusCode;
                     Log.i("ConnectionError", "Codigo error http: " + statusCode);
-                }else { //Error al realizar la conexión
+                    responseCode(statusCode);
+                } else { //Error al realizar la conexión
                     Log.i("ConnectionError", "No se puede conectar con el servidor");
                     Toast.makeText(context, "No se puede conectar con el servidor", Toast.LENGTH_SHORT).show();
                 }
@@ -403,7 +379,7 @@ public class Connection {
         requestQueue.add(stringRequest);
     }
 
-    public void createUser(final User u, final String pass, final String mail){
+    public void createUser(final User u, final String pass, final String mail) {
         StringRequest stringRequest = new StringRequest(Request.Method.PUT, Constant.URL_LOGIN,
                 new Response.Listener<String>() {
                     @Override
@@ -426,21 +402,8 @@ public class Connection {
                 if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
                     int statusCode = error.networkResponse.statusCode;
                     Log.i("ConnectionError", "Codigo error http: " + statusCode);
-                    String e = error.networkResponse.data.toString();
-                    switch (statusCode){
-                        case 401:
-                            Toast.makeText(context, "El usuario ya existe", Toast.LENGTH_SHORT).show();
-                            break;
-                        case 406:
-                            Toast.makeText(context, "No se han recibido los parámetros necesarios", Toast.LENGTH_SHORT).show();
-                            break;
-                        case 500:
-                            Toast.makeText(context, "Error en el servidor", Toast.LENGTH_SHORT).show();
-                            break;
-                        default: break;
-                    } //Fin switch
-
-                }else { //Error al realizar la conexión
+                    responseCode(statusCode);
+                } else { //Error al realizar la conexión
                     Log.i("ConnectionError", "No se puede conectar con el servidor");
                     Toast.makeText(context, "No se puede conectar con el servidor", Toast.LENGTH_SHORT).show();
                 }
@@ -460,5 +423,68 @@ public class Connection {
         };
         RequestQueue requestQueue = Volley.newRequestQueue(context);
         requestQueue.add(stringRequest);
+    }
+
+    public void logout () {
+
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, Constant.URL_LOGIN,
+                new Response.Listener<String>() {
+                    @Override
+                    public void onResponse(String response) { //Respuesta sin errores
+                        Log.i("LogOut", "Respuesta: " + response);
+                        Toast.makeText(context, "Sesión de usuario cerrada", Toast.LENGTH_SHORT).show();
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // En caso de tener algun error en la obtencion de los datos
+                Log.w("ConnectionError", "Error al pedir las presentaciones, " + error.toString());
+                if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
+                    int statusCode = error.networkResponse.statusCode;
+                } else { //Error en la conexión
+                    Toast.makeText(context, "Error en la conexión", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }) {
+            @Override
+            protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                return super.parseNetworkResponse(response);
+            }
+            @Override
+            public Map<String, String> getHeaders() {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put(Constant.HEADER_AUT, user.getToken());
+                return headers;
+            }
+        };
+        RequestQueue requestQueue = Volley.newRequestQueue(context);
+        requestQueue.add(stringRequest);
+    }
+
+    private void responseCode (int statusCode) {
+        switch (statusCode) {
+            case 400:
+                Toast.makeText(context, "No se han enviado los datos necesarios", Toast.LENGTH_SHORT).show();
+                break;
+            case 401:
+                Toast.makeText(context, "Autenticación incorrecta, vuelva a iniciar sesión", Toast.LENGTH_SHORT).show();
+                logout();
+                Preferences.deleteCredentials(context);
+                Intent intent = new Intent(context, LoginActivity.class);
+                context.startActivity(intent);
+                break;
+            case 403:
+                Toast.makeText(context, "Los datos enviados son incorrectos o incompletos", Toast.LENGTH_SHORT).show();
+                break;
+            case 409:
+                Toast.makeText(context, "El usuario ya existe", Toast.LENGTH_SHORT).show();
+                break;
+            case 500:
+                Toast.makeText(context, "Error en el servidor", Toast.LENGTH_SHORT).show();
+                break;
+            default:
+                Toast.makeText(context, "Error desconocido", Toast.LENGTH_SHORT).show();
+                break;
+        }
     }
 }

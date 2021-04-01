@@ -23,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import es.ujaen.virtualpresentation.R;
+import es.ujaen.virtualpresentation.connection.Connection;
 import es.ujaen.virtualpresentation.data.Preferences;
 import es.ujaen.virtualpresentation.data.User;
 
@@ -38,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
 
     public String usuario;
 
+    private User u;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,7 +51,7 @@ public class MainActivity extends AppCompatActivity {
         boolean qr = getIntent().getBooleanExtra("qr", false);
 
 
-        User u = Preferences.getUser(getApplicationContext());
+        u = Preferences.getUser(getApplicationContext());
         String nombre = u.getNombre() + " " + u.getApellidos();
         //SharedPreferences sf = getSharedPreferences("default", MODE_PRIVATE);
         //String usuario = sf.getString("nombre", "");
@@ -115,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         if (item.getItemId() == R.id.action_logout){
+            new Connection(this, u).logout();
             Toast.makeText(this, "Se ha cerrado la sesión", Toast.LENGTH_SHORT).show();
             Preferences.deleteCredentials(this);
             Intent intent = new Intent(this, LoginActivity.class);
