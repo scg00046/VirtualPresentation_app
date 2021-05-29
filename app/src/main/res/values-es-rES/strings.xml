@@ -31,4 +31,5 @@
     <string name="session_name_filter">abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ0123456789-_</string>
     <string name="create_session_description">Si ya existe una sesión con ese nombre y ese usuario pero otra presentación se actualizará en el servidor.
         Los caracteres válidos para el nombre de sesión son alfanuméricos, permite mayusculas y los caractéres guión \'-\' y guión bajo \'_\'.</string>
+    <string name="present_check_setNote">Fijar nota</string>
 </resources>

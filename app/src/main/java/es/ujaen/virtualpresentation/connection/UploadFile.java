@@ -84,7 +84,7 @@ public class UploadFile {
         //upNotification.getCompleted().autoClear = true;
         upNotification.getError().message = res.getString(R.string.not_up_error);
         upNotification.getProgress().message = res.getString(R.string.not_up_progress)+ " (" +Placeholders.PROGRESS + ")";
-        upNotification.getCancelled().message = "Cancelado"; //TODO (implementar cancelar)
+        upNotification.getCancelled().message = "Cancelado";
 
         Log.i("upload", "subir: notificacion creada");
         try {

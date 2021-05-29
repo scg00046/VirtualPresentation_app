@@ -21,8 +21,6 @@ import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
 
-import static es.ujaen.virtualpresentation.activities.PresentationActivity.buttonsClickable;
-import static es.ujaen.virtualpresentation.activities.PresentationActivity.snackbarReconnection;
 
 /**
  * Clase SocketIO, conexión con el servidor para comunicación mediante socketIO
@@ -43,31 +41,20 @@ public class SocketIO extends Thread {
         this.nombreSesion = sesion.getSesionCodigo();
 
         start();
-        /*Log.i("SocketCrear","Creando del socket...");
-        try {
-            socket = IO.socket("http://192.168.1.10:8080");
-
-            socket.on(Socket.EVENT_CONNECT, onConnect);
-            socket.on(Socket.EVENT_DISCONNECT, onDisconnect);
-            socket.on(Socket.EVENT_CONNECT_ERROR, onConnectError);
-            socket.on(sesion.getNombreSesion(), newMessageListner);
-            socket.connect();    //Connect socket to server
-
-            Log.i("SocketCrear","Creado el socket");
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }*/
     }
 
     @Override
     public synchronized void start() { //TODO revisar hilo
         super.start();
         Log.i("SocketCrear","Creando del socket...");
-        //IO.Options opts = new IO.Options();
+        IO.Options opts = new IO.Options();
+        opts.path = Constant.URL_SOCKETIO;
+        opts.reconnection = true;
+        opts.reconnectionAttempts = 5;
 
         try {
             Log.i("SOCKET", "start: try");
-            socket = IO.socket(Constant.SERVER/*,opts*/);
+            socket = IO.socket(Constant.SERVER,opts);
 
             socket.on(Socket.EVENT_CONNECT, onConnect); //Evento Conexión
             socket.on(Socket.EVENT_DISCONNECT, onDisconnect); //Evento desconexión
@@ -76,16 +63,25 @@ public class SocketIO extends Thread {
             //socket.on(Constant.ROOM_SOCKET, newMessageListner);
             socket.connect();    //Conexión del socket con el servidor
             Thread.sleep(500);
-            Log.i("SocketCrear","Socket creado, usuario: "+usuario.getNombreusuario()+", sesion: "+nombreSesion);
-            do {
+            Log.i("SocketCrear","Socket creado, usuario: "+usuario.getNombreusuario()+", sesion: "+nombreSesion+" socket activo "+isConnected());
+            int intent = 0;
+            //do {
+                Log.i("SocketCrear", "intento: "+intent);
                 checkConnection();
-            } while (!isConnected());
+                intent++;
+                //Thread.sleep(intent*500);
+            //} while (!isConnected() && intent < 3);
+//            if (intent == 3 && !isConnected()){ //TODO intentar reconectar?
+//                PresentationActivity.snackbarReconnection("No se ha podido conectar22222222222", "Salir");
+//            }
             Log.i("SOCKET", "finish");
             //sendMessage("OK");
             //Log.i("SocketCrear","Socket abierto (Ok enviado)");
             //setListening();
         } catch (URISyntaxException | InterruptedException e) {
             e.printStackTrace();
+            Log.e("SocketConnectError", "onConnectError: " + e.getMessage());
+            PresentationActivity.snackbarReconnection("No se ha podido conectar", "Salir");
         }
     }
 
@@ -144,15 +140,18 @@ public class SocketIO extends Thread {
                         String usuarioWeb = "web-"+usuario.getNombreusuario();
                         if (origen.equals(usuarioWeb)){
                             if (mensaje.startsWith("Página")){
-                                int pagina = Integer.parseInt(mensaje.split(" ")[1]);
+                                String [] msj = mensaje.split(":");
+                                if ( msj[0].equals("Página inicial") ) PresentationActivity.buttonsClickable(true);
+                                int pagina = Integer.parseInt(msj[1]);
                                 PresentationActivity.setPage(pagina);
-                            }else if ( mensaje.equals("Comando no reconocido") ){//TODO recepción de errores
+                            } else if ( mensaje.equals("Comando no reconocido") ){//TODO recepción de errores
                                 Toast.makeText(activity, "Comando no reconocido", Toast.LENGTH_SHORT).show();
                             } else if (mensaje.equals("salir")){
                                 Preferences.refreshSession(activity.getApplicationContext(), sesion, PresentationActivity.getPaginaActual());
-                                snackbarReconnection("Se ha cerrado la presentación del navegador", "Salir");
+                                //snackbarReconnection("Se ha cerrado la presentación del navegador", "Salir");
                                 Intent intent = new Intent(activity, MainActivity.class);
                                 intent.putExtra("qr", true);
+                                intent.putExtra("text","Se ha cerrado la sesión desde el navegador");
                                 activity.startActivity(intent);
                                 activity.finish();
                             }
@@ -171,7 +170,7 @@ public class SocketIO extends Thread {
      */
     private void checkConnection(){
         if (!isConnected()){
-            snackbarReconnection("No se ha conectado correctamente", "Reintentar");
+            PresentationActivity.snackbarReconnection("No se ha conectado correctamente", "Reintentar");
         } else {
             startSession();
         }
@@ -245,6 +244,10 @@ public class SocketIO extends Thread {
         }
     }
 
+    public void setConnect() {
+        socket.connect();
+    }
+
     public boolean isConnected(){
         return socket.connected();
     }
@@ -256,5 +259,40 @@ public class SocketIO extends Thread {
                 Log.i("SocketReceive", "Recibido:: "+args);
             }
         });
+    }
+
+
+    /**
+     * Comprueba si el socket está activo
+     * @return
+     */
+    public static boolean isActive(){
+        Socket sck;
+        Log.i("SOCKET_TEST","Creando del socket...");
+        IO.Options opts = new IO.Options();
+        opts.path = Constant.URL_SOCKETIO;
+        opts.timeout = 5000;
+        opts.reconnection = true;
+
+        try {
+            Log.i("SOCKET_TEST", "start: try");
+            sck = IO.socket(Constant.SERVER, opts);
+            sck.connect();
+            //Log.i("SOCKET_TEST", "activo: "+sck.isActive()+" - conectado: "+sck.connected()+" ...");
+            /*if (sck.isActive()) {
+                sck.disconnect();
+                return true;
+            } else {
+                //sck.disconnect();
+                return false;
+            }*/
+            sck.disconnect();
+            return true;
+        } catch (URISyntaxException e) {
+            Log.i("SOCKET_TEST", "start: catch");
+            return false;
+            //e.printStackTrace();
+            //Log.e("SocketConnectError", "onConnectError: " + e.getMessage());
+        }
     }
 }

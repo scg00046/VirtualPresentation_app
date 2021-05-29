@@ -22,7 +22,7 @@ public class User {
     private String apellidos;
     private String mail;
     private String token;
-    //TODO revisar listas
+
     private List<Presentations> listaPresentaciones; //Almacena los datos de las presentaciones
     private List<String> listaPresentacionesString; //Usada para el spinner
 

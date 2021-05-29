@@ -103,7 +103,7 @@ public class UploadFileFragment extends Fragment {
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
         mViewModel = ViewModelProviders.of(this).get(UploadFileViewModel.class);
-        // TODO: Use the ViewModel
+
     }
 
     @Override

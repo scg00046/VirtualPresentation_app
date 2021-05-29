@@ -24,6 +24,7 @@ import com.google.android.gms.vision.Detector;
 import com.google.android.gms.vision.barcode.Barcode;
 import com.google.android.gms.vision.barcode.BarcodeDetector;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -33,6 +34,7 @@ import java.io.IOException;
 import es.ujaen.virtualpresentation.R;
 import es.ujaen.virtualpresentation.activities.MainActivity;
 import es.ujaen.virtualpresentation.activities.PresentationActivity;
+import es.ujaen.virtualpresentation.connection.SocketIO;
 import es.ujaen.virtualpresentation.data.Preferences;
 import es.ujaen.virtualpresentation.data.Session;
 
@@ -46,6 +48,9 @@ public class QRFragment extends Fragment {
     private final int PERMISSIONS_REQUEST_CAMERA = 1;
     private String token = "";
     private String tokenanterior = "";
+
+    private View view;
+    private int colorAccent;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -63,6 +68,9 @@ public class QRFragment extends Fragment {
             }
         });*/
         MainActivity.hiddenFloatButton();
+
+        view = root.findViewById(R.id.fragment_qr);
+        colorAccent = getResources().getColor(R.color.colorAccent, getActivity().getTheme());
 
         if (ActivityCompat.checkSelfPermission(root.getContext(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) { //Permisos necesarios
@@ -194,10 +202,22 @@ public class QRFragment extends Fragment {
     }//Fin initQR
 
     private void nextActivity(Context context, String nombreSesion, String codigo){
-        Intent intent = new Intent(context, PresentationActivity.class);
-        intent.putExtra("sesion",nombreSesion);
-        intent.putExtra("codigo", codigo);
-        getContext().startActivity(intent);
-        getActivity().finish();
+        //if (SocketIO.isActive()) {
+            Log.i("Socket_test", "Socket active cambio de actividad");
+            Intent intent = new Intent(context, PresentationActivity.class);
+
+            intent.putExtra("sesion", nombreSesion);
+            intent.putExtra("codigo", codigo);
+            Log.i("Socket_test", "Intent creado con parametros");
+            getContext().startActivity(intent);
+            Log.i("Socket_test", "Start activity");
+            getActivity().finish();
+        /*} else {
+            Log.i("Socket_test", "Socket not active");
+            //Toast.makeText(context, "Socket unvailable", Toast.LENGTH_SHORT).show();
+            Snackbar mySnackbar = Snackbar.make(view, "No se puede conectar con websocket", Snackbar.LENGTH_LONG);
+            mySnackbar.setBackgroundTint(colorAccent);
+            mySnackbar.show();
+        }*/
     }
 }

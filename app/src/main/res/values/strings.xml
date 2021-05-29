@@ -37,4 +37,5 @@
     <string name="session_name_filter">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_</string>
     <string name="create_session_description">If there is already a session with that name and that user but another presentation will be updated on the server.
         The valid characters for the session name are alphanumeric, allow uppercase letters and the characters hyphen \'-\' and underscore \'_\'.</string>
+    <string name="present_check_setNote">Set note</string>
 </resources>

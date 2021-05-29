@@ -49,6 +49,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         //getIntent().getStringExtra("sesion");
         boolean qr = getIntent().getBooleanExtra("qr", false);
+        String text = getIntent().getStringExtra("text");
 
 
         u = Preferences.getUser(getApplicationContext());
@@ -88,7 +89,7 @@ public class MainActivity extends AppCompatActivity {
         if (qr){
             navController.navigate(R.id.nav_qr);
             View view = findViewById(R.id.drawer_layout);
-            Snackbar mySnackbar = Snackbar.make(view, "Se ha cerrado la sesión desde el navegador", Snackbar.LENGTH_LONG);
+            Snackbar mySnackbar = Snackbar.make(view, text, Snackbar.LENGTH_LONG);
             mySnackbar.setBackgroundTint(getResources().getColor(R.color.colorAccent, getTheme()));
             mySnackbar.show();
         }

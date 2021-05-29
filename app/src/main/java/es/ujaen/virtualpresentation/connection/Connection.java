@@ -150,7 +150,7 @@ public class Connection {
                     @Override
                     public void onResponse(String response) { //Respuesta sin errores
                         Log.i("GetPresentaciones", "(" + statusCode[0] + ")" + response);
-                        if (statusCode[0] == 200) {
+                        if (statusCode[0] == 200 || statusCode[0] == 304) {
                             try {
                                 user.presentationsJSONtoList(new JSONArray(response));
                             } catch (JSONException e) {
@@ -270,7 +270,7 @@ public class Connection {
     private boolean savePreferencesSession(String sesion, String presentacion, View view) {
         boolean resultado;
         Presentations present = user.getPresentationByName(presentacion);
-        if (present != null) { //TODO revisar si es necesario
+        if (present != null) {
             Session session = new Session(user.getNombreusuario(), sesion, presentacion, present.getPaginas());
             Preferences.saveSession(context, session);
             TextView descripcion = (TextView) view.findViewById(R.id.sessionDescription);

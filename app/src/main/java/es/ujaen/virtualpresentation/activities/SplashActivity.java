@@ -52,7 +52,7 @@ public class SplashActivity extends AppCompatActivity {
         //Recopilación de datos guardados
         SharedPreferences sf = getSharedPreferences("default", MODE_PRIVATE);
         String usuario = sf.getString("nombreusuario", "");
-        boolean recordar = sf.getBoolean("permanente",false); //TODO revisar que funciona
+        boolean recordar = sf.getBoolean("permanente",false);
 
         final Intent intent;
         if (usuario.equals("") || !recordar) { //Usuario vacío o con la opción no recordar
