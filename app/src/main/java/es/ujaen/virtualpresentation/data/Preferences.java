@@ -2,6 +2,10 @@ package es.ujaen.virtualpresentation.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.util.Log;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Clase Preferences, datos almacenados en la aplicación
@@ -67,6 +71,7 @@ public class Preferences {
         editor.putInt("paginas", session.getPaginas());
         editor.putInt("paginaInicial", 1);
         editor.commit();
+        addSessionList(context, session.getNombreSesion());
     }
 
     /**
@@ -110,5 +115,43 @@ public class Preferences {
         SharedPreferences sp = context.getSharedPreferences(nombreSesion, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         editor.clear().commit();
+        removeSessionList(context, nombreSesion);
+    }
+
+    public static boolean exitsSession (Context context, String nombreSesion) {
+        SharedPreferences sp = context.getSharedPreferences(nombreSesion, Context.MODE_PRIVATE);
+        String presentacion = sp.getString("presentacion", "");
+        if (presentacion.equals("")) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    private static void addSessionList (Context context, String session) {
+        SharedPreferences sp = context.getSharedPreferences("all_Sessions",Context.MODE_PRIVATE);
+        Set<String> sesiones = sp.getStringSet("sesiones", new HashSet<String>());
+        sesiones.add(session);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putStringSet("sesiones",sesiones);
+        editor.commit();
+    }
+
+    private static void removeSessionList(Context context, String session) {
+        SharedPreferences sp = context.getSharedPreferences("all_Sessions",Context.MODE_PRIVATE);
+        Set<String> sesiones = sp.getStringSet("sesiones", new HashSet<String>());
+        sesiones.remove(session);
+        SharedPreferences.Editor editor = sp.edit();
+        editor.putStringSet("sesiones",sesiones);
+        editor.commit();
+    }
+
+    public static void removeAllSession(Context context) {
+        SharedPreferences sp = context.getSharedPreferences("all_Sessions", Context.MODE_PRIVATE);
+        Set<String> sesiones = sp.getStringSet("sesiones", new HashSet<String>());
+        Object[] list = sesiones.toArray();
+        for (int i = 0; i < list.length; i++) {
+            deleteSession(context, list[i].toString());
+        }
     }
 }

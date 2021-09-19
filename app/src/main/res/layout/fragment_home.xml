@@ -6,6 +6,8 @@
     android:layout_height="match_parent"
     android:id="@+id/fragment_home"
     android:orientation="vertical"
+    android:focusable="false"
+    android:focusableInTouchMode="true"
     tools:context=".activities.ui.home.HomeFragment">
 
     <TextView
@@ -64,6 +66,7 @@
         android:layout_marginTop="10dp"
         android:layout_marginLeft="15dp"
         android:layout_marginRight="15dp"
+        android:textColor="@android:color/black"
         android:text="@string/create_session_description"
         />
 

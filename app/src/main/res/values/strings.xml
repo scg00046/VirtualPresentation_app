@@ -34,8 +34,44 @@
     <string name="not_up_error">Error during upload</string>
     <string name="present_btn_start">Start session</string>
     <string name="present_zoom_reset">Reset</string>
-    <string name="session_name_filter">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_</string>
-    <string name="create_session_description">If there is already a session with that name and that user but another presentation will be updated on the server.
-        The valid characters for the session name are alphanumeric, allow uppercase letters and the characters hyphen \'-\' and underscore \'_\'.</string>
+    <string name="session_name_filter">abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-</string>
+    <string name="create_session_description">   Valid characters for the session name are: \n <li> alphanumeric </li> \n <li> uppercase </li> \n <li> lowercase </li> \n <li> hyphen \'- \'</li>
+\n\n   If there is already a session with the name entered and its user, the presentation established for the session will be updated.</string>
     <string name="present_check_setNote">Set note</string>
+    <string name="about_description">Slide show remote control. \nYou can do the following: \n <li> Upload and remove presentation from server </li> \n <li> Create session </li> \n <li> Scan QR code of defined session </li> \n <li> Presentation control </li></string>
+    <string name="user_name">Name</string>
+    <string name="user_lastname">Last name</string>
+    <string name="user_email">E-mail</string>
+    <string name="reg_clear">Clear data</string>
+    <string name="reg_title">Registration</string>
+    <string name="reg_desc">Input your data</string>
+    <string name="reg_send">Register</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="load_sending">Sending ...</string>
+    <string name="reqpass_title">Enter your password</string>
+    <string name="reqpass_desc">User session has expired, please enter your password</string>
+    <string name="btn_send">Send</string>
+    <string name="login_incomplete">Please complete all fields</string>
+    <string name="reg_incomplete">It must include at least 2 characters for the username and password</string>
+    <string name="con_login_ok">Successful authentication</string>
+    <string name="con_login_wrongup">Incorrect username and/or password</string>
+    <string name="con_error_connection">Server connection failed</string>
+    <string name="con_nopresentations">There are no presentations for the user</string>
+    <string name="con_sess_created">The session %1$s, has been created</string>
+    <string name="con_sess_updated">The presentation of the session %1$s has been updated</string>
+    <string name="con_sess_nochanges">No changes have occurred in session %1$s</string>
+    <string name="con_del_present">Presentation successfully removed</string>
+    <string name="con_sess_delete">Session deleted successfully</string>
+    <string name="con_user_register">User successfully registered</string>
+    <string name="con_err_unk">Unknown error</string>
+    <string name="con_err_server">Server error</string>
+    <string name="con_err_authexp">Authentication expired, please login again</string>
+    <string name="con_err_wrongauth">Bad authentication</string>
+    <string name="present_check_link">Link</string>
+    <string name="present_btn_openNotes">Open/Close notes</string>
+    <string name="present_btn_clearNotes">Clear notes</string>
+    <string name="present_edit_titleUrl">Title ...</string>
+    <string name="present_edit_note">Note ...</string>
+    <string name="present_edit_url">URL ...</string>
+    <string name="load_conecting">Conecting ...</string>
 </resources>

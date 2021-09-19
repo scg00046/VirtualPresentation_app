@@ -95,7 +95,7 @@ public class UploadFile {
                     .addFileToUpload(uriFile, "presentacion", filename)
                     .setNotificationConfig(upNotification)
                     .setMethod("PUT")
-                    .addHeader(Constant.HEADER_AUT, usuario.getToken())
+                    .addHeader(Constant.HEADER_AUT, "Bearer " + usuario.getToken())
                     .setUtf8Charset()
                     .setMaxRetries(2)
                     .setDelegate(new UploadStatusDelegate() {

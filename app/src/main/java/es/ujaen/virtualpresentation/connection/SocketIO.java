@@ -144,7 +144,7 @@ public class SocketIO extends Thread {
                                 if ( msj[0].equals("Página inicial") ) PresentationActivity.buttonsClickable(true);
                                 int pagina = Integer.parseInt(msj[1]);
                                 PresentationActivity.setPage(pagina);
-                            } else if ( mensaje.equals("Comando no reconocido") ){//TODO recepción de errores
+                            } else if ( mensaje.equals("Comando no reconocido") ){
                                 Toast.makeText(activity, "Comando no reconocido", Toast.LENGTH_SHORT).show();
                             } else if (mensaje.equals("salir")){
                                 Preferences.refreshSession(activity.getApplicationContext(), sesion, PresentationActivity.getPaginaActual());
@@ -207,6 +207,7 @@ public class SocketIO extends Thread {
             if (socket.connected()) { //Comprueba que está conectado el socket
                 Log.i("SocketSend","Envia mensaje");
                 socket.emit(Constant.ROOM_SOCKET, mensaje);
+                //socket.emit(nombreSesion, mensaje);
             }
         } catch (JSONException e) {
             e.printStackTrace();
@@ -218,7 +219,7 @@ public class SocketIO extends Thread {
      * @param fijarnota
      * @param texto
      */
-    public void sendNote( boolean fijarnota, String texto) { //TODO revisar parámetros a enviar por socket
+    public void sendNote(boolean fijarnota, String texto, int pagina) { //TODO revisar parámetros a enviar por socket
         Log.i("SocketPreSend","Enviando mensaje ...");
         JSONObject mensaje = new JSONObject();
         try {
@@ -227,6 +228,7 @@ public class SocketIO extends Thread {
             mensaje.put("usuario", usuario.getNombreusuario());
             mensaje.put("fijar", fijarnota);
             mensaje.put("nota", texto);
+            mensaje.put("pagina", pagina);
             if (socket.connected()) { //Comprueba que está conectado el socket
                 Log.i("SocketSend","Envia mensaje");
                 socket.emit(Constant.ROOM_SOCKET, mensaje);

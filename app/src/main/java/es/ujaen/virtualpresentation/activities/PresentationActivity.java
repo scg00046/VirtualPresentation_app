@@ -41,8 +41,8 @@ public class PresentationActivity extends AppCompatActivity {
 
     private static Button pmas, pmenos, zmas, zmenos, muestranotas, zinicial, eliminanotas;
     private static ImageButton subir, bajar, izquierda, derecha, enviaNota;
-    private static EditText pagina, nota;
-    private static CheckBox fijarnota;
+    private static EditText pagina, nota, tituloUrl;
+    private static CheckBox fijarnota, enlace;
 
     private static final int[] controles = {
             R.id.pr_bt_up,
@@ -107,6 +107,8 @@ public class PresentationActivity extends AppCompatActivity {
         nota = (EditText) findViewById(R.id.pr_note);
         enviaNota = (ImageButton) findViewById(R.id.pr_bt_send_notes);
         fijarnota = (CheckBox) findViewById(R.id.pr_check_fix_note);
+        enlace = (CheckBox) findViewById(R.id.pr_check_url);
+        tituloUrl = (EditText) findViewById(R.id.pr_title_link);
 
         view = (View) findViewById(R.id.activityPresentation);
 
@@ -145,8 +147,6 @@ public class PresentationActivity extends AppCompatActivity {
                 if (paginaActual < paginaMax) {
                     socketIO.sendMessage("pmas");
                     paginaActual++;
-                } else {
-                    Toast.makeText(context, "Ha llegado a la última página", Toast.LENGTH_LONG).show();
                 }
                 checkPage();
             }
@@ -158,8 +158,6 @@ public class PresentationActivity extends AppCompatActivity {
                 if (paginaActual > 1) {
                     socketIO.sendMessage("pmenos");
                     paginaActual--;
-                } else {
-                    Toast.makeText(context, "Ha llegado al inicio", Toast.LENGTH_LONG).show();
                 }
                 checkPage();
             }
@@ -233,13 +231,34 @@ public class PresentationActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String nuevaNota = nota.getText().toString().trim();
-                if (nuevaNota.length() > 0) {
-                    nuevaNota = nuevaNota.replaceAll(System.getProperty("line.separator"), "<br>");
+                String titulo = tituloUrl.getText().toString().trim();
+                if (nuevaNota.length() > 0 && ((enlace.isChecked() && titulo.length() > 0) || !enlace.isChecked())) {
+                    if (enlace.isChecked()) {
+                        nuevaNota = "<a href='" + nuevaNota + "'>" + titulo + "</a>";
+                        tituloUrl.getText().clear();
+                        enlace.setChecked(false);
+                        tituloUrl.setVisibility(View.INVISIBLE);
+                        nota.setHint(getString(R.string.present_edit_note));
+                    } else {
+                        nuevaNota = nuevaNota.replaceAll(System.getProperty("line.separator"), "<br>");
+                    }
                     Log.i("EnviaNota", "Nota: '" + nuevaNota + "'");
-                    socketIO.sendNote(fijarnota.isChecked(), nuevaNota);
+                    socketIO.sendNote(fijarnota.isChecked(), nuevaNota, paginaActual);
                     fijarnota.setChecked(false);
                     nota.getText().clear();
                     inputMethodManager.hideSoftInputFromWindow(enviaNota.getWindowToken(), 0); //cierra el teclado
+                }
+            }
+        });
+        enlace.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (enlace.isChecked()) {
+                    tituloUrl.setVisibility(View.VISIBLE);
+                    nota.setHint(getString(R.string.present_edit_url));
+                } else {
+                    tituloUrl.setVisibility(View.INVISIBLE);
+                    nota.setHint(getString(R.string.present_edit_note));
                 }
             }
         });
@@ -272,8 +291,12 @@ public class PresentationActivity extends AppCompatActivity {
 
     private void salir() {
         super.onBackPressed();
-        socketIO.sendMessage("FIN");
+        if (socketIO.isConnected()) {
+            socketIO.sendMessage("FIN");
+        }
         Intent intent = new Intent(PresentationActivity.this, MainActivity.class);
+        intent.putExtra("qr", true);
+        intent.putExtra("text", "Ha finalizado la sesión correctamente");
         startActivity(intent);
         finish();
     }
@@ -320,6 +343,7 @@ public class PresentationActivity extends AppCompatActivity {
         nota.setEnabled(click);
         enviaNota.setEnabled(click);
         fijarnota.setEnabled(click);
+        enlace.setEnabled(click);
         //Controles para mover la diapositiva
         for (int id : controles) {
             ImageButton btn = (ImageButton) view.findViewById(id);
@@ -333,7 +357,7 @@ public class PresentationActivity extends AppCompatActivity {
             btn.setEnabled(click);
         }
         // Resto de controles
-        for (int id: botones){
+        for (int id : botones) {
             Button btn = (Button) view.findViewById(id);
             if (click) {
                 btn.setBackground(ContextCompat.getDrawable(stContext, R.drawable.btn_round));
@@ -393,15 +417,16 @@ public class PresentationActivity extends AppCompatActivity {
         mySnackbar.show();
     }
 
-    private static void checkPage(){
+    private static void checkPage() {
+        //Botón avanzar
         if (paginaActual == paginaMax) {
             pmas.setBackground(ContextCompat.getDrawable(stContext, R.drawable.btn_round_disabled));
             pmas.setEnabled(false);
-        } else  {
+        } else {
             pmas.setBackground(ContextCompat.getDrawable(stContext, R.drawable.btn_round));
             pmas.setEnabled(true);
         }
-
+        //Botón retroceder
         if (paginaActual == 1) {
             pmenos.setBackground(ContextCompat.getDrawable(stContext, R.drawable.btn_round_disabled));
             pmenos.setEnabled(false);

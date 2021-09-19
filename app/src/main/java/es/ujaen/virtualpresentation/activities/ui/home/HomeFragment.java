@@ -4,8 +4,10 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.InputFilter;
 import android.text.Spanned;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -29,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 
 import es.ujaen.virtualpresentation.R;
+import es.ujaen.virtualpresentation.activities.MainActivity;
 import es.ujaen.virtualpresentation.connection.Connection;
 import es.ujaen.virtualpresentation.data.Preferences;
 import es.ujaen.virtualpresentation.data.User;
@@ -75,6 +78,7 @@ public class HomeFragment extends Fragment {
                 Collections.unmodifiableList(defSpinner));
         presList.setAdapter(adapter);
         activateSendSession(false);
+        MainActivity.showHideLoading(context,true);
         con.getPresentations(presList, 0);
 
 
@@ -90,8 +94,36 @@ public class HomeFragment extends Fragment {
             public void onClick(View v) {
                 String sesion = session.getText().toString().trim();
                 String seleccionado = presList.getSelectedItem().toString();
-                con.createSession(sesion,seleccionado,root);
-                //Toast.makeText(root.getContext().getApplicationContext(), "Sesion: "+sesion+" - "+seleccionado, Toast.LENGTH_LONG).show();
+                if (sesion.isEmpty()) {
+                    Toast.makeText(root.getContext().getApplicationContext(), "Introduzca el nombre de la sesión", Toast.LENGTH_LONG).show();
+                } else {
+                    con.createSession(sesion, seleccionado, root);
+                }
+            }
+        });
+
+        session.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                if (s.toString().isEmpty()){
+                    enviaSesion.setClickable(false);
+                    enviaSesion.setEnabled(false);
+                    enviaSesion.setBackgroundTintList(ColorStateList.valueOf(colorGrey));
+                } else {
+                    enviaSesion.setClickable(true);
+                    enviaSesion.setEnabled(true);
+                    enviaSesion.setBackgroundTintList(ColorStateList.valueOf(colorAccent));
+                }
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+
             }
         });
 

@@ -13,6 +13,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProviders;
 
 import es.ujaen.virtualpresentation.R;
+import es.ujaen.virtualpresentation.activities.MainActivity;
 
 public class AboutFragment extends Fragment {
 
@@ -30,6 +31,7 @@ public class AboutFragment extends Fragment {
                 textView.setText(s);
             }
         });
+        MainActivity.hiddenFloatButton();
         return root;
     }
 }

@@ -51,9 +51,9 @@ public class LoginActivity extends AppCompatActivity {
         recuerdame = findViewById(R.id.remember);
         registro = findViewById(R.id.register);
 
-        //Configuración spinner cargando registro
+        //Configuración spinner cargando
         loading = new ProgressDialog(context);
-        loading.setMessage("Registrando ...");
+        loading.setMessage(getString(R.string.load_sending));
         loading.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 
         final Connection conn = new Connection(context);
@@ -67,9 +67,10 @@ public class LoginActivity extends AppCompatActivity {
                 String password = pass.getText().toString().trim();
                 if (usuario.isEmpty() || password.isEmpty()) {
                     Log.i("LoginActivity_login", "No hay datos presentes");
-                    Toast.makeText(getApplicationContext(), "Rellena todos los campos", Toast.LENGTH_LONG).show();
+                    Toast.makeText(getApplicationContext(), getString(R.string.login_incomplete), Toast.LENGTH_LONG).show();
                 } else {
-                    conn.login(usuario, password, recuerdame.isChecked());
+                    loading.show();
+                    conn.login(usuario, password, recuerdame.isChecked(), true);
                 }
             }
         });
@@ -78,20 +79,20 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
-                builder.setTitle("Registro")
-                        .setMessage("Introduzca sus datos");
+                builder.setTitle(getString(R.string.reg_title))
+                        .setMessage(getString(R.string.reg_desc));
 
                 LayoutInflater inflater = getLayoutInflater();
 
                 View view = inflater.inflate(R.layout.alertdialog_register, null);
                 builder.setView(view);
                 //Elementos de la vista de registro
-                reg_username = view.findViewById(R.id.reg_username);
-                reg_pass = view.findViewById(R.id.reg_pass);
-                reg_name = view.findViewById(R.id.reg_name);
-                reg_lastname = view.findViewById(R.id.reg_lastname);
-                reg_email = view.findViewById(R.id.reg_email);
-                reg_clean = view.findViewById(R.id.reg_clean);
+                reg_username = (EditText) view.findViewById(R.id.reg_username);
+                reg_pass = (EditText) view.findViewById(R.id.reg_pass);
+                reg_name = (EditText) view.findViewById(R.id.reg_name);
+                reg_lastname = (EditText) view.findViewById(R.id.reg_lastname);
+                reg_email = (EditText) view.findViewById(R.id.reg_email);
+                reg_clean = (TextView) view.findViewById(R.id.reg_clean);
 
                 reg_clean.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -103,8 +104,8 @@ public class LoginActivity extends AppCompatActivity {
                         reg_email.setText("");
                     }
                 });
-                builder.setPositiveButton("Registrar", null);
-                builder.setNegativeButton("Cancelar", null);
+                builder.setPositiveButton(getString(R.string.reg_send), null);
+                builder.setNegativeButton(getString(R.string.btn_cancel), null);
 
                 final AlertDialog dialog = builder.create();
 
@@ -116,26 +117,24 @@ public class LoginActivity extends AppCompatActivity {
 
                             @Override
                             public void onClick(View view) {
-                                String nick = reg_username.getText().toString();
-                                String nombre = reg_name.getText().toString();
-                                String apell = reg_lastname.getText().toString();
-                                String pass = reg_pass.getText().toString();
-                                String mail = reg_email.getText().toString();
+                                String nick = reg_username.getText().toString().trim();
+                                String nombre = reg_name.getText().toString().trim();
+                                String apell = reg_lastname.getText().toString().trim();
+                                String pass = reg_pass.getText().toString().trim();
+                                String mail = reg_email.getText().toString().trim();
 
-                                if (nick.length()>=2 && pass.length()>=2) {
+                                if (nick.length()>=2 && pass.length()>=2 && nombre.length() >= 2) {
                                     loading.show();//muestra spinner de carga
                                     User u = new User(nick, nombre, apell);
                                     conn.createUser(u, pass, mail); //Registra el usuario
                                     dialog.dismiss();
                                 } else {
-                                    Toast.makeText(context, "Datos no suficientes para el registro", Toast.LENGTH_SHORT).show();
+                                    Toast.makeText(context, getString(R.string.reg_incomplete), Toast.LENGTH_SHORT).show();
                                 }
-
                             }
-                        });
+                        }); //Botón registrar
                     }
-                });
-
+                });//Fin dialog.setOnShowListener
                 dialog.show();
             }
         });

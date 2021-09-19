@@ -3,7 +3,6 @@ package es.ujaen.virtualpresentation.connection;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Color;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -17,8 +16,7 @@ import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
-import com.android.volley.toolbox.BaseHttpStack;
-import com.android.volley.toolbox.HttpResponse;
+import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.snackbar.Snackbar;
@@ -28,7 +26,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
@@ -85,7 +85,7 @@ public class Connection {
      * @param password
      * @param guardar
      */
-    public void login(final String usuario, final String password, final boolean guardar) {
+    public void login(final String usuario, final String password, final boolean guardar, final boolean next) {
         StringRequest stringRequest;
         stringRequest = new StringRequest(Request.Method.POST, Constant.URL_LOGIN,
                 new Response.Listener<String>() {
@@ -100,26 +100,29 @@ public class Connection {
                         } catch (JSONException e) {
                             e.printStackTrace();
                         }
-                        Toast.makeText(context, "Autenticación correcta", Toast.LENGTH_LONG).show();
-                        Intent intent = new Intent(context, MainActivity.class); //Pasa al activity principal
-                        context.startActivity(intent);
+                        if (next) {
+                            Toast.makeText(context, context.getString(R.string.con_login_ok), Toast.LENGTH_LONG).show();
+                            LoginActivity.stopLoading();
+                            Intent intent = new Intent(context, MainActivity.class); //Pasa al activity principal
+                            context.startActivity(intent);
+                        }
                     }
                 }, new Response.ErrorListener() {
             @Override
             public void onErrorResponse(VolleyError error) {
                 // Si se recibe un código de error
                 Log.e("ConnectionError", "Error al iniciar sesión" + error);
+                if (next) LoginActivity.stopLoading();
                 if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
                     int statusCode = error.networkResponse.statusCode;
                     Log.i("ConnectionError", "Codigo error http: " + error.networkResponse.statusCode);
                     if (statusCode == 401) {
-                        Toast.makeText(context, "Nombre de usuario y/o contraseñas incorrectos", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, context.getString(R.string.con_login_wrongup), Toast.LENGTH_SHORT).show();
                     } else {
                         responseCode(statusCode);
                     }
                 } else { //Error al realizar la conexión
-                    Log.i("ConnectionError", "No se puede conectar con el servidor");
-                    Toast.makeText(context, "No se puede conectar con el servidor", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, context.getString(R.string.con_error_connection), Toast.LENGTH_SHORT).show();
                 }
             }
         }) {
@@ -128,7 +131,7 @@ public class Connection {
                 // En este metodo se hace el envio de valores de la aplicacion al servidor
                 Map<String, String> parametros = new Hashtable<String, String>();
                 parametros.put("user", usuario);
-                parametros.put("password", password);
+                parametros.put("password", getHash(password));
                 return parametros;
             }
         };
@@ -160,14 +163,17 @@ public class Connection {
                             ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
                                     android.R.layout.simple_spinner_dropdown_item, user.getListaPresentacionesString());
                             presList.setAdapter(adapter);
+                            MainActivity.showHideLoading(context,false);
                             if (fragmento == 0) {
+                                //Activa el botón para crear la sesión
                                 HomeFragment.activateSendSession(true);
                             } else if (fragmento == 1) {
+                                //Activa el botón para eliminar la presentación
                                 DeleteFragment.activateDelete(true);
                             }
-                            Log.i("GetPresentacionesList", "Tamaño lista: " + user.getListaPresentacionesString().size());
+                            //Log.i("GetPresentacionesList", "Tamaño lista: " + user.getListaPresentacionesString().size());
                         } else {
-                            Toast.makeText(context, "No hay presentaciones para el usuario", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, context.getString(R.string.con_nopresentations), Toast.LENGTH_SHORT).show();
                         }
                     }
                 }, new Response.ErrorListener() {
@@ -175,11 +181,12 @@ public class Connection {
             public void onErrorResponse(VolleyError error) {
                 // En caso de tener algun error en la obtencion de los datos
                 Log.w("ConnectionError", "Error al pedir las presentaciones, " + error.toString());
+                MainActivity.showHideLoading(context,false);
                 if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
                     int statusCode = error.networkResponse.statusCode;
                     responseCode(statusCode);
                 } else { //Error en la conexión
-                    Toast.makeText(context, "Error en la conexión", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, context.getString(R.string.con_error_connection), Toast.LENGTH_SHORT).show();
                 }
             }
         }) {
@@ -192,13 +199,77 @@ public class Connection {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put(Constant.HEADER_AUT, user.getToken());
+                headers.put(Constant.HEADER_AUT, "Bearer " + user.getToken());
                 return headers;
             }
         };
 
         RequestQueue requestQueue = Volley.newRequestQueue(context);
         requestQueue.add(stringRequest);
+    }
+
+    /**
+     * Obtiene la lista de sesiones almacenadas en el servidor y las almacena en la memoria local
+     */
+    public void getSessions() {
+        final int[] statusCode = new int[1];
+
+        JsonArrayRequest jsonReq = new JsonArrayRequest(Request.Method.GET, Constant.getUrlSessionUser(user.getNombreusuario()),
+                null, new Response.Listener<JSONArray>() {
+
+            @Override
+            public void onResponse(JSONArray response) { //Respuesta sin errores
+                Log.i("GetSesiones", "(" + statusCode[0] + ")" + response);
+                if (statusCode[0] == 200 || statusCode[0] == 304) {
+
+                    for (int i = 0; i < response.length(); i++) {
+                        try {
+                            JSONObject s = response.getJSONObject(i);
+                            Session session = new Session(
+                                    s.getString("usuario"),
+                                    s.getString("sesion"),
+                                    s.getString("presentacion"),
+                                    s.getInt("paginas") );
+
+                            if (!Preferences.exitsSession(context, session.getNombreSesion())) {
+                                Preferences.saveSession(context, session);
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                // En caso de tener algun error en la obtencion de los datos
+                Log.w("ConnectionError", "Error al pedir las presentaciones, " + error.toString());
+                if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
+                    int statusCode = error.networkResponse.statusCode;
+                    responseCode(statusCode);
+                } else { //Error en la conexión
+                    //Toast.makeText(context, context.getString(R.string.con_error_connection), Toast.LENGTH_SHORT).show();
+                }
+            }
+        }) {
+            @Override
+            protected Response<JSONArray> parseNetworkResponse(NetworkResponse response) {
+                statusCode[0] = response.statusCode;
+                return super.parseNetworkResponse(response);
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                HashMap<String, String> headers = new HashMap<String, String>();
+                headers.put(Constant.HEADER_AUT, "Bearer " + user.getToken());
+                return headers;
+            }
+        };
+
+        RequestQueue requestQueue = Volley.newRequestQueue(context);
+        requestQueue.add(jsonReq);
     }
 
     /**
@@ -222,13 +293,13 @@ public class Connection {
                         String mensaje = "";
                         switch (response) {
                             case "Creada":
-                                mensaje = "Se ha creado la sesión";
+                                mensaje = context.getString(R.string.con_sess_created, sesion);
                                 break;
                             case "Sin cambios":
-                                mensaje = "Se ha guardado la sesión";
+                                mensaje = context.getString(R.string.con_sess_nochanges, sesion);
                                 break;
                             case "Actualizada":
-                                mensaje = "Se ha actualizado la sesión con otra presentación";
+                                mensaje = context.getString(R.string.con_sess_updated, sesion);
                                 break;
                         }
                         if (savePreferencesSession(sesion, presentacion, view)) {
@@ -243,6 +314,8 @@ public class Connection {
                 if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
                     int statusCode = error.networkResponse.statusCode;
                     responseCode(statusCode);
+                } else { //Error en la conexión
+                    Toast.makeText(context, context.getString(R.string.con_error_connection), Toast.LENGTH_SHORT).show();
                 }
             }//Fin on error response
         }) {
@@ -258,7 +331,7 @@ public class Connection {
             @Override
             public Map<String, String> getHeaders() throws AuthFailureError {
                 HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put(Constant.HEADER_AUT, user.getToken());
+                headers.put(Constant.HEADER_AUT, "Bearer " + user.getToken());
                 return headers;
             }
         };
@@ -277,7 +350,7 @@ public class Connection {
             String url = Constant.getUrlUser(user.getNombreusuario()) + "/" + sesion;
             descripcion.setText(url);
             resultado = true;
-        } else {
+        } else { //TODO: hace falta??
             Snackbar.make(view, "No existe la presentación", Snackbar.LENGTH_LONG)
                     .setBackgroundTint(R.color.colorErrorBackg)
                     .show();
@@ -300,7 +373,7 @@ public class Connection {
                     @Override
                     public void onResponse(String response) {
                         Log.i("DeletePresentation", "Se ha eliminado correctamente. " + response);
-                        Toast.makeText(context, response, Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, context.getString(R.string.con_del_present), Toast.LENGTH_SHORT).show();
                         List<String> pres = user.getListaPresentacionesString();
                         pres.remove(presentacion);
                         ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
@@ -317,15 +390,14 @@ public class Connection {
                     Log.i("ConnectionError", "Codigo error http: " + statusCode);
                     responseCode(statusCode);
                 } else { //Error al realizar la conexión
-                    Log.i("ConnectionError", "No se puede conectar con el servidor");
-                    Toast.makeText(context, "No se puede conectar con el servidor", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, context.getString(R.string.con_error_connection), Toast.LENGTH_SHORT).show();
                 }
             }
         }) {
             @Override
             public Map<String, String> getHeaders() {
                 HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put(Constant.HEADER_AUT, user.getToken());
+                headers.put(Constant.HEADER_AUT, "Bearer " + user.getToken());
                 headers.put("presentacion", presentacion);
                 return headers;
             }
@@ -346,7 +418,7 @@ public class Connection {
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
-                        Toast.makeText(context, "Se ha eliminado la sesión", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, context.getString(R.string.con_sess_delete), Toast.LENGTH_SHORT).show();
                         Log.i("DeleteSession", "Se ha eliminado correctamente. " + response);
                         Preferences.deleteSession(context, sesion);
                     }
@@ -361,8 +433,7 @@ public class Connection {
                     Log.i("ConnectionError", "Codigo error http: " + statusCode);
                     responseCode(statusCode);
                 } else { //Error al realizar la conexión
-                    Log.i("ConnectionError", "No se puede conectar con el servidor");
-                    Toast.makeText(context, "No se puede conectar con el servidor", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, context.getString(R.string.con_error_connection), Toast.LENGTH_SHORT).show();
                 }
             }
         }) {
@@ -370,7 +441,7 @@ public class Connection {
             public Map<String, String> getHeaders() throws AuthFailureError {
                 //return super.getHeaders();
                 HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put(Constant.HEADER_AUT, user.getToken());
+                headers.put(Constant.HEADER_AUT, "Bearer " + user.getToken());
                 headers.put("session", sesion);
                 return headers;
             }
@@ -385,7 +456,7 @@ public class Connection {
                     @Override
                     public void onResponse(String response) {
                         if (response.equals("OK")) {
-                            Toast.makeText(context, "Usuario registrado", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, context.getString(R.string.con_user_register), Toast.LENGTH_SHORT).show();
                             Log.i("CreateUser", "Se ha registrado correctamente. " + response);
                             LoginActivity.stopLoading();
                             LoginActivity.setUser(u.getNombreusuario());
@@ -404,8 +475,7 @@ public class Connection {
                     Log.i("ConnectionError", "Codigo error http: " + statusCode);
                     responseCode(statusCode);
                 } else { //Error al realizar la conexión
-                    Log.i("ConnectionError", "No se puede conectar con el servidor");
-                    Toast.makeText(context, "No se puede conectar con el servidor", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(context, context.getString(R.string.con_error_connection), Toast.LENGTH_SHORT).show();
                 }
             }
         }) {
@@ -414,7 +484,7 @@ public class Connection {
 
                 Map<String, String> parametros = new Hashtable<String, String>();
                 parametros.put("nombreusuario", u.getNombreusuario());
-                parametros.put("password", pass);
+                parametros.put("password", getHash(pass));
                 parametros.put("nombre", u.getNombre());
                 parametros.put("apellidos", u.getApellidos());
                 parametros.put("email", mail);
@@ -425,14 +495,14 @@ public class Connection {
         requestQueue.add(stringRequest);
     }
 
-    public void logout () {
+    public void logout() {
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, Constant.URL_LOGIN,
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) { //Respuesta sin errores
                         Log.i("LogOut", "Respuesta: " + response);
-                        Toast.makeText(context, "Sesión de usuario cerrada", Toast.LENGTH_SHORT).show();
+                        //Toast.makeText(context, "Sesión de usuario cerrada", Toast.LENGTH_SHORT).show();
                     }
                 }, new Response.ErrorListener() {
             @Override
@@ -442,7 +512,7 @@ public class Connection {
                 if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
                     int statusCode = error.networkResponse.statusCode;
                 } else { //Error en la conexión
-                    Toast.makeText(context, "Error en la conexión", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(context, context.getString(R.string.con_error_connection), Toast.LENGTH_SHORT).show();
                 }
             }
         }) {
@@ -450,10 +520,11 @@ public class Connection {
             protected Response<String> parseNetworkResponse(NetworkResponse response) {
                 return super.parseNetworkResponse(response);
             }
+
             @Override
             public Map<String, String> getHeaders() {
                 HashMap<String, String> headers = new HashMap<String, String>();
-                headers.put(Constant.HEADER_AUT, user.getToken());
+                headers.put(Constant.HEADER_AUT, "Bearer " + user.getToken());
                 return headers;
             }
         };
@@ -461,30 +532,63 @@ public class Connection {
         requestQueue.add(stringRequest);
     }
 
-    private void responseCode (int statusCode) {
+    private void responseCode(int statusCode) {
+
+        Intent intent = new Intent(context, LoginActivity.class);
         switch (statusCode) {
             case 400:
                 Toast.makeText(context, "No se han enviado los datos necesarios", Toast.LENGTH_SHORT).show();
                 break;
             case 401:
-                Toast.makeText(context, "Autenticación incorrecta, vuelva a iniciar sesión", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, context.getString(R.string.con_err_wrongauth), Toast.LENGTH_SHORT).show();
                 logout();
                 Preferences.deleteCredentials(context);
-                Intent intent = new Intent(context, LoginActivity.class);
+                Preferences.removeAllSession(context);
                 context.startActivity(intent);
                 break;
             case 403:
                 Toast.makeText(context, "Los datos enviados son incorrectos o incompletos", Toast.LENGTH_SHORT).show();
                 break;
-            case 409:
+            case 409: //TODO: pasar a donde corresponda (crear usuario y presentacion)
                 Toast.makeText(context, "El usuario ya existe", Toast.LENGTH_SHORT).show();
                 break;
+            case 419:
+                Toast.makeText(context, context.getString(R.string.con_err_authexp), Toast.LENGTH_SHORT).show();
+                try {
+                    Thread.sleep(2000);
+                    MainActivity.requestPassword(context);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                break;
             case 500:
-                Toast.makeText(context, "Error en el servidor", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, context.getString(R.string.con_err_server), Toast.LENGTH_SHORT).show();
                 break;
             default:
-                Toast.makeText(context, "Error desconocido", Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, context.getString(R.string.con_err_unk), Toast.LENGTH_SHORT).show();
                 break;
         }
+    }
+
+    private String getHash(String password) {
+        StringBuilder sb = new StringBuilder();
+        String pass = "";
+        try {
+            byte[] plaintext = password.getBytes("UTF-8");
+
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte[] digest = md.digest(plaintext);
+            //Convertir array de bytes a string
+            for (int i = 0; i < digest.length; i++) {
+                final String hex = Integer.toHexString(0xff & digest[i]);
+                if (hex.length() == 1)
+                    sb.append('0');
+                sb.append(hex);
+            }
+            pass = sb.toString();
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
+            e.printStackTrace();
+        }
+        return pass;
     }
 }

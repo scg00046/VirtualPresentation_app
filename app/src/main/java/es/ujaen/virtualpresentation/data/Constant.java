@@ -24,7 +24,7 @@ public class Constant {
     public static final String URL_SOCKETIO = DIR_NAME + "/socket.io";
     public static final String ROOM_SOCKET = "virtualPresentations";
 
-    public static final String HEADER_AUT = "Autenticacion";
+    public static final String HEADER_AUT = "Authorization";
 
     /**
      * Obtiene la url completa para el usuario

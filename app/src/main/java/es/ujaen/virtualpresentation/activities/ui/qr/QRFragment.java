@@ -49,33 +49,21 @@ public class QRFragment extends Fragment {
     private String token = "";
     private String tokenanterior = "";
 
-    private View view;
-    private int colorAccent;
-
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-       // Context context = QRFragment.super.getContext();
-        //Context context = getContext();
+
         qrViewModel =
                 ViewModelProviders.of(this).get(QRViewModel.class);
         View root = inflater.inflate(R.layout.fragment_qr, container, false);
         final Context context = root.getContext();
-        /*final TextView textView = root.findViewById(R.id.text_gallery);
-        galleryViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
-            @Override
-            public void onChanged(@Nullable String s) {
-                textView.setText(s);
-            }
-        });*/
-        MainActivity.hiddenFloatButton();
-
-        view = root.findViewById(R.id.fragment_qr);
-        colorAccent = getResources().getColor(R.color.colorAccent, getActivity().getTheme());
 
         if (ActivityCompat.checkSelfPermission(root.getContext(), Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) { //Permisos necesarios
-                ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA},
-                        PERMISSIONS_REQUEST_CAMERA);
+            ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA},
+                    PERMISSIONS_REQUEST_CAMERA);
+            MainActivity.showFloatButton(); //Muestra el botón para actualizar manualmente el fragmento
+        } else {
+            MainActivity.hiddenFloatButton();
         }
 
         cameraView = (SurfaceView) root.findViewById(R.id.camera_view);
@@ -94,9 +82,7 @@ public class QRFragment extends Fragment {
         BarcodeDetector barcodeDetector =
                 new BarcodeDetector.Builder(context)
                         .setBarcodeFormats(Barcode.QR_CODE)
-                        //.setBarcodeFormats(Barcode.ALL_FORMATS)
                         .build();
-
         // Abrir cámara
         cameraSource = new CameraSource
                 .Builder(context, barcodeDetector)
@@ -121,6 +107,7 @@ public class QRFragment extends Fragment {
                     }
                     return;
                 } else { //Permisos concedidos
+                    MainActivity.hiddenFloatButton();
                     try {
                         cameraSource.start(cameraView.getHolder());
                     } catch (IOException ie) {
@@ -145,10 +132,9 @@ public class QRFragment extends Fragment {
             public void release() {
             }
 
-
             @Override
             public void receiveDetections(Detector.Detections<Barcode> detections) {
-                //boolean hecho = false;
+
                 final SparseArray<Barcode> barcodes = detections.getDetectedItems();
                 if (barcodes.size() > 0) {
 
@@ -157,23 +143,22 @@ public class QRFragment extends Fragment {
 
                     // verificamos que el token anterior no se igual al actual
                     // esto es util para evitar multiples llamadas empleando el mismo token
-                    if (!token.equals(tokenanterior) /*&& !hecho*/) {
+                    if (!token.equals(tokenanterior)) {
 
-                        // guardamos el ultimo token proceado
+                        // guardamos el ultimo token procesado
                         tokenanterior = token;
-                        Log.i("QR_Token", token);
 
                         try {
                             JSONObject tokenJson = new JSONObject(token);
                             Session sqr = Session.sessionFromJSON(tokenJson); //Sesión del QR
-                            Log.i("QR_sesionRecived","Sesion:"+sqr.getNombreSesion()+" Pres: "+sqr.getPresentacion()+" User: "+sqr.getNombreUsuario());
+                            Log.i("QR_sesionRecived", "Sesion:" + sqr.getNombreSesion() + " Pres: " + sqr.getPresentacion() + " User: " + sqr.getNombreUsuario());
 
-                            Session sa = Preferences.getSession(context,sqr.getNombreSesion()); //Sesión almacenada
-                            Log.i("QR_sesionSaved","Sesion:"+sa.getNombreSesion()+" Pres: "+sa.getPresentacion()+" User: "+sa.getNombreUsuario());
+                            Session sa = Preferences.getSession(context, sqr.getNombreSesion()); //Sesión almacenada
+                            Log.i("QR_sesionSaved", "Sesion:" + sa.getNombreSesion() + " Pres: " + sa.getPresentacion() + " User: " + sa.getNombreUsuario());
+
                             //Comprueba nombre de usuario y presentación
-                            if (sqr.getNombreUsuario().equals(sa.getNombreUsuario()) && sqr.getPresentacion().equals(sa.getPresentacion())){
+                            if (sqr.getNombreUsuario().equals(sa.getNombreUsuario()) && sqr.getPresentacion().equals(sa.getPresentacion())) {
                                 Log.i("QR_Sesion", "Sesión correcta");
-                                //hecho = true;
                                 String codigo = sqr.getCodigo();
                                 nextActivity(context, sqr.getNombreSesion(), codigo);
                             }
@@ -201,23 +186,19 @@ public class QRFragment extends Fragment {
         }); //Fin barcode.setProcessor
     }//Fin initQR
 
-    private void nextActivity(Context context, String nombreSesion, String codigo){
-        //if (SocketIO.isActive()) {
-            Log.i("Socket_test", "Socket active cambio de actividad");
-            Intent intent = new Intent(context, PresentationActivity.class);
+    /**
+     * Realiza un intent para abrir la actividd de presentación, pasando el nombre de la sesión y el código
+     *
+     * @param context
+     * @param nombreSesion
+     * @param codigo
+     */
+    private void nextActivity(Context context, String nombreSesion, String codigo) {
 
-            intent.putExtra("sesion", nombreSesion);
-            intent.putExtra("codigo", codigo);
-            Log.i("Socket_test", "Intent creado con parametros");
-            getContext().startActivity(intent);
-            Log.i("Socket_test", "Start activity");
-            getActivity().finish();
-        /*} else {
-            Log.i("Socket_test", "Socket not active");
-            //Toast.makeText(context, "Socket unvailable", Toast.LENGTH_SHORT).show();
-            Snackbar mySnackbar = Snackbar.make(view, "No se puede conectar con websocket", Snackbar.LENGTH_LONG);
-            mySnackbar.setBackgroundTint(colorAccent);
-            mySnackbar.show();
-        }*/
+        Intent intent = new Intent(context, PresentationActivity.class);
+        intent.putExtra("sesion", nombreSesion);
+        intent.putExtra("codigo", codigo);
+        getContext().startActivity(intent);
+        getActivity().finish(); //Finaliza la actividad principal
     }
 }

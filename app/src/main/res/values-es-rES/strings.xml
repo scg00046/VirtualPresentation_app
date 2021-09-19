@@ -28,8 +28,44 @@
     <string name="menu_home">Inicio</string>
     <string name="present_btn_start">Empezar sesión</string>
     <string name="present_zoom_reset">Inicial</string>
-    <string name="session_name_filter">abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ0123456789-_</string>
-    <string name="create_session_description">Si ya existe una sesión con ese nombre y ese usuario pero otra presentación se actualizará en el servidor.
-        Los caracteres válidos para el nombre de sesión son alfanuméricos, permite mayusculas y los caractéres guión \'-\' y guión bajo \'_\'.</string>
+    <string name="session_name_filter">abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ0123456789-</string>
     <string name="present_check_setNote">Fijar nota</string>
+    <string name="create_session_description">   Los caracteres válidos para el nombre de sesión son: \n <li> alfanuméricos</li> \n <li> mayusculas</li> \n <li> minusculas</li> \n <li> guión \'-\'</li>
+\n\n   Si ya existe una sesión con el nombre introducido y su usuario, se actualizará la presentación establecida para la sesión.</string>
+    <string name="about_description">Control remoto de presentación de diapositivas. \nPuede hacer lo siguiente:\n <li>Subir y eliminar presentación del servidor</li>\n <li>Crear sesión </li>\n <li>Escanear código QR de la sesión definida </li>\n <li>Control de presentación</li></string>
+    <string name="user_name">Nombre</string>
+    <string name="user_lastname">Apellidos</string>
+    <string name="user_email">Correo electrónico</string>
+    <string name="reg_clear">Limpiar datos</string>
+    <string name="reg_title">Registro</string>
+    <string name="reg_desc">Introduzca sus datos</string>
+    <string name="reg_send">Registrarse</string>
+    <string name="btn_cancel">Cancelar</string>
+    <string name="load_sending">Enviando ...</string>
+    <string name="reqpass_title">Introduzca su contraseña</string>
+    <string name="reqpass_desc">La sesión de usuario ha expirado, por favor introduzca su contraseña</string>
+    <string name="btn_send">Enviar</string>
+    <string name="login_incomplete">Por favor, complete todos los campos</string>
+    <string name="reg_incomplete">Debe incluir al menos 2 caracteres para el usuario y para la contraseña</string>
+    <string name="con_login_ok">Autenticación correcta</string>
+    <string name="con_login_wrongup">Nombre de usuario y/o contraseña incorrectos</string>
+    <string name="con_error_connection">Error en la conexión con el servidor</string>
+    <string name="con_nopresentations">No hay presentaciones para el usuario</string>
+    <string name="con_sess_created">Se ha creado la sesión %1$s</string>
+    <string name="con_sess_updated">Se ha actualizado la presentación de la sesión %1$s</string>
+    <string name="con_sess_nochanges">No se han producido cambios en la sesión %1$s</string>
+    <string name="con_del_present">Presentación eliminada correctamente</string>
+    <string name="con_sess_delete">Sesión eliminada correctamente</string>
+    <string name="con_user_register">Usuario registrado correctamente</string>
+    <string name="con_err_unk">Error desconocido</string>
+    <string name="con_err_server">Error en el servidor</string>
+    <string name="con_err_wrongauth">Autenticación incorrecta</string>
+    <string name="con_err_authexp">Autenticación caducada, vuelva a iniciar sesión</string>
+    <string name="present_btn_openNotes">Abrir/Cerrar notas</string>
+    <string name="present_btn_clearNotes">Eliminar notas</string>
+    <string name="present_edit_titleUrl">Título ...</string>
+    <string name="present_edit_note">Nota ...</string>
+    <string name="present_check_link">Enlace</string>
+    <string name="present_edit_url">URL ...</string>
+    <string name="load_conecting">Conectando ...</string>
 </resources>

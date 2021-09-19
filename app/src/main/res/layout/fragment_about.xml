@@ -28,7 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:layout_marginTop="40dp"
-        android:text="Control remoto de presentación de diapositivas. Puede hacer lo siguiente:\n- Subir y eliminar presentación del servidor\n- Crear sesión \n- Escanear código QR de la sesión definida\n- Control de presentación" />
+        android:text="@string/about_description" />
 
     <TextView
         android:layout_width="wrap_content"
