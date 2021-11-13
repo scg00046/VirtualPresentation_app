@@ -19,7 +19,6 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -74,7 +73,7 @@ public class DeleteFragment extends Fragment {
                 final String presentacion = presList.getSelectedItem().toString();
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setTitle("¿Está seguro?");
-                builder.setMessage("¿Desea eliminar la presentación: "+presentacion+"?");
+                builder.setMessage("¿Desea eliminar la presentación: " + presentacion + "?");
 
                 builder.setPositiveButton("Sí", new DialogInterface.OnClickListener() {
                     @Override
@@ -100,15 +99,16 @@ public class DeleteFragment extends Fragment {
 
     /**
      * Activa o desactiva el botón para eliminar presentación
+     *
      * @param activar
      */
-    public static void activateDelete(boolean activar){
-        if (activar){
+    public static void activateDelete(boolean activar) {
+        if (activar) {
             delete.setClickable(true);
             delete.setEnabled(true);
             presList.setClickable(true);
             delete.setBackgroundTintList(ColorStateList.valueOf(colorAccent));
-        }else {
+        } else {
             delete.setClickable(false);
             delete.setEnabled(false);
             presList.setClickable(false);

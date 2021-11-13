@@ -21,7 +21,6 @@ import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.snackbar.Snackbar;
 
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -29,10 +28,19 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.security.cert.X509Certificate;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import es.ujaen.virtualpresentation.activities.LoginActivity;
 import es.ujaen.virtualpresentation.activities.MainActivity;
@@ -63,6 +71,7 @@ public class Connection {
     public Connection(Context context) {
         Log.d("Connection", "Conexion creada");
         this.context = context;
+        handleSSLHandshake();
     }
 
     /**
@@ -76,6 +85,7 @@ public class Connection {
         Log.d("Connection", "Conexion creada");
         this.context = context;
         this.user = user;
+        handleSSLHandshake();
     }
 
     /**
@@ -163,7 +173,7 @@ public class Connection {
                             ArrayAdapter<String> adapter = new ArrayAdapter<String>(context,
                                     android.R.layout.simple_spinner_dropdown_item, user.getListaPresentacionesString());
                             presList.setAdapter(adapter);
-                            MainActivity.showHideLoading(context,false);
+                            MainActivity.showHideLoading(context, false);
                             if (fragmento == 0) {
                                 //Activa el botón para crear la sesión
                                 HomeFragment.activateSendSession(true);
@@ -181,7 +191,7 @@ public class Connection {
             public void onErrorResponse(VolleyError error) {
                 // En caso de tener algun error en la obtencion de los datos
                 Log.w("ConnectionError", "Error al pedir las presentaciones, " + error.toString());
-                MainActivity.showHideLoading(context,false);
+                MainActivity.showHideLoading(context, false);
                 if (error.networkResponse != null) { //Conexion realizada pero con respuesta de error
                     int statusCode = error.networkResponse.statusCode;
                     responseCode(statusCode);
@@ -229,10 +239,15 @@ public class Connection {
                                     s.getString("usuario"),
                                     s.getString("sesion"),
                                     s.getString("presentacion"),
-                                    s.getInt("paginas") );
+                                    s.getInt("paginas"));
 
                             if (!Preferences.exitsSession(context, session.getNombreSesion())) {
                                 Preferences.saveSession(context, session);
+                            } else {
+                                Session sesionSaved = Preferences.getSession(context, session.getNombreSesion());
+                                if (!sesionSaved.getPresentacion().equals(session.getPresentacion())) {
+                                    Preferences.refreshSession(context, session, 1);
+                                }
                             }
 
                         } catch (JSONException e) {
@@ -323,8 +338,8 @@ public class Connection {
             protected Map<String, String> getParams() {//Parámetros de la petición
 
                 Map<String, String> parametros = new Hashtable<String, String>();
-                parametros.put("session", sesion);
-                parametros.put("presentation", presentacion);
+                parametros.put("sesion", sesion);
+                parametros.put("presentacion", presentacion);
                 return parametros;
             }
 
@@ -350,7 +365,7 @@ public class Connection {
             String url = Constant.getUrlUser(user.getNombreusuario()) + "/" + sesion;
             descripcion.setText(url);
             resultado = true;
-        } else { //TODO: hace falta??
+        } else {
             Snackbar.make(view, "No existe la presentación", Snackbar.LENGTH_LONG)
                     .setBackgroundTint(R.color.colorErrorBackg)
                     .show();
@@ -442,7 +457,7 @@ public class Connection {
                 //return super.getHeaders();
                 HashMap<String, String> headers = new HashMap<String, String>();
                 headers.put(Constant.HEADER_AUT, "Bearer " + user.getToken());
-                headers.put("session", sesion);
+                headers.put("sesion", sesion);
                 return headers;
             }
         };
@@ -539,21 +554,19 @@ public class Connection {
             case 400:
                 Toast.makeText(context, "No se han enviado los datos necesarios", Toast.LENGTH_SHORT).show();
                 break;
-            case 401:
-                Toast.makeText(context, context.getString(R.string.con_err_wrongauth), Toast.LENGTH_SHORT).show();
-                logout();
-                Preferences.deleteCredentials(context);
-                Preferences.removeAllSession(context);
-                context.startActivity(intent);
-                break;
             case 403:
                 Toast.makeText(context, "Los datos enviados son incorrectos o incompletos", Toast.LENGTH_SHORT).show();
                 break;
-            case 409: //TODO: pasar a donde corresponda (crear usuario y presentacion)
+            case 409:
                 Toast.makeText(context, "El usuario ya existe", Toast.LENGTH_SHORT).show();
                 break;
+            case 401:
             case 419:
-                Toast.makeText(context, context.getString(R.string.con_err_authexp), Toast.LENGTH_SHORT).show();
+                if (statusCode == 401) {
+                    Toast.makeText(context, context.getString(R.string.con_err_wrongauth), Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(context, context.getString(R.string.con_err_authexp), Toast.LENGTH_SHORT).show();
+                }
                 try {
                     Thread.sleep(2000);
                     MainActivity.requestPassword(context);
@@ -590,5 +603,36 @@ public class Connection {
             e.printStackTrace();
         }
         return pass;
+    }
+
+
+    @SuppressLint("TrulyRandom")
+    public static void handleSSLHandshake() {
+        try {
+            TrustManager[] trustAllCerts = new TrustManager[]{new X509TrustManager() {
+                public X509Certificate[] getAcceptedIssuers() {
+                    return new X509Certificate[0];
+                }
+
+                @Override
+                public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                }
+
+                @Override
+                public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                }
+            }};
+
+            SSLContext sc = SSLContext.getInstance("SSL");
+            sc.init(null, trustAllCerts, new SecureRandom());
+            HttpsURLConnection.setDefaultSSLSocketFactory(sc.getSocketFactory());
+            HttpsURLConnection.setDefaultHostnameVerifier(new HostnameVerifier() {
+                @Override
+                public boolean verify(String arg0, SSLSession arg1) {
+                    return true;
+                }
+            });
+        } catch (Exception ignored) {
+        }
     }
 }

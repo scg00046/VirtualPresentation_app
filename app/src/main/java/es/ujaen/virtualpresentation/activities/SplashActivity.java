@@ -18,6 +18,7 @@ import es.ujaen.virtualpresentation.data.Preferences;
 
 /**
  * Activity presentación de la aplicación
+ *
  * @author Sergio Caballero Garrido
  */
 public class SplashActivity extends AppCompatActivity {
@@ -52,7 +53,7 @@ public class SplashActivity extends AppCompatActivity {
         //Recopilación de datos guardados
         SharedPreferences sf = getSharedPreferences("default", MODE_PRIVATE);
         String usuario = sf.getString("nombreusuario", "");
-        boolean recordar = sf.getBoolean("permanente",false);
+        boolean recordar = sf.getBoolean("permanente", false);
 
         final Intent intent;
         if (usuario.equals("") || !recordar) { //Usuario vacío o con la opción no recordar

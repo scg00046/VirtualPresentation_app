@@ -2,11 +2,8 @@ package es.ujaen.virtualpresentation.activities.ui.home;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
-import android.text.InputFilter;
-import android.text.Spanned;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -53,11 +50,9 @@ public class HomeFragment extends Fragment {
         Log.i("HomeFragment", "Iniciando Fragmento Home");
         Context context = HomeFragment.super.getContext();
         User user = Preferences.getUser(context);
-        Log.i("HomeFragment_user", user.getNombreusuario()+" - "+user.getNombre());
+        Log.i("HomeFragment_user", user.getNombreusuario() + " - " + user.getNombre());
         final Connection con = new Connection(context, user);
         fm = getActivity().getSupportFragmentManager();
-
-
 
         homeViewModel =
                 ViewModelProviders.of(this).get(HomeViewModel.class);
@@ -78,9 +73,8 @@ public class HomeFragment extends Fragment {
                 Collections.unmodifiableList(defSpinner));
         presList.setAdapter(adapter);
         activateSendSession(false);
-        MainActivity.showHideLoading(context,true);
+        MainActivity.showHideLoading(context, true);
         con.getPresentations(presList, 0);
-
 
         homeViewModel.getText().observe(getViewLifecycleOwner(), new Observer<String>() {
             @Override
@@ -110,7 +104,7 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (s.toString().isEmpty()){
+                if (s.toString().isEmpty()) {
                     enviaSesion.setClickable(false);
                     enviaSesion.setEnabled(false);
                     enviaSesion.setBackgroundTintList(ColorStateList.valueOf(colorGrey));
@@ -123,7 +117,6 @@ public class HomeFragment extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-
             }
         });
 
@@ -132,15 +125,16 @@ public class HomeFragment extends Fragment {
 
     /**
      * Activa o desactiva el botón para enviar sesión
+     *
      * @param activar
      */
-    public static void activateSendSession(boolean activar){
-        if (activar){
+    public static void activateSendSession(boolean activar) {
+        if (activar) {
             enviaSesion.setClickable(true);
             enviaSesion.setEnabled(true);
             presList.setClickable(true);
             enviaSesion.setBackgroundTintList(ColorStateList.valueOf(colorAccent));
-        }else {
+        } else {
             enviaSesion.setClickable(false);
             enviaSesion.setEnabled(false);
             presList.setClickable(false);

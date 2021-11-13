@@ -68,4 +68,5 @@
     <string name="present_check_link">Enlace</string>
     <string name="present_edit_url">URL ...</string>
     <string name="load_conecting">Conectando ...</string>
+    <string name="not_up_canceled">Subida cancelada</string>
 </resources>

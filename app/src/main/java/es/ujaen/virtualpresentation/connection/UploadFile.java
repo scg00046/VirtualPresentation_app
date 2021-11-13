@@ -4,7 +4,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.res.Resources;
-import android.net.Uri;
 import android.os.Build;
 import android.util.Log;
 import android.widget.TextView;
@@ -14,10 +13,8 @@ import net.gotev.uploadservice.MultipartUploadRequest;
 import net.gotev.uploadservice.Placeholders;
 import net.gotev.uploadservice.ServerResponse;
 import net.gotev.uploadservice.UploadInfo;
-import net.gotev.uploadservice.UploadNotificationAction;
 import net.gotev.uploadservice.UploadNotificationConfig;
 import net.gotev.uploadservice.UploadService;
-import net.gotev.uploadservice.UploadServiceSingleBroadcastReceiver;
 import net.gotev.uploadservice.UploadStatusDelegate;
 
 import java.util.UUID;
@@ -29,6 +26,7 @@ import es.ujaen.virtualpresentation.data.User;
 
 /**
  * Clase UploadFile, permite la subida de archivos al servidor
+ *
  * @author Sergio Caballero Garrido
  */
 public class UploadFile {
@@ -37,15 +35,16 @@ public class UploadFile {
     private User usuario;
     private TextView messageText;
 
-    private final String channelNotification =  "CanalNotificacion";
+    private final String channelNotification = "CanalNotificacion";
 
     /**
      * Constructor de la clase
+     *
      * @param context contexto de la aplicación
      * @param usuario usuario autenticado
      */
     public UploadFile(Context context, User usuario) {
-        Log.d("UploadFile","Conexion creada");
+        Log.d("UploadFile", "Conexion creada");
         this.context = context;
         this.usuario = usuario;
         //this.messageText = messageText;
@@ -69,28 +68,29 @@ public class UploadFile {
 
     /**
      * Subida de ficheros
-     * @param uriFile uri del fichero a subir
+     *
+     * @param uriFile  uri del fichero a subir
      * @param filename nombre del fichero
      */
-    public void subir(final String uriFile, final String filename){
-        Log.i("upload", "subir: uri "+uriFile.toString()+" filename "+filename);
+    public void subir(final String uriFile, final String filename) {
+        Log.i("upload", "subir: uri " + uriFile.toString() + " filename " + filename);
         Resources res = context.getResources();
+        //Notificación del proceso de subida
         UploadNotificationConfig upNotification = new UploadNotificationConfig();
         upNotification.setTitleForAllStatuses(res.getString(R.string.not_up_title))
                 .setNotificationChannelId(channelNotification)
                 .setRingToneEnabled(false);
-        //TODO revisar textos subida
-        upNotification.getCompleted().message = res.getString(R.string.not_up_completed)+": "+filename;
+        upNotification.getCompleted().message = res.getString(R.string.not_up_completed) + ": " + filename;
         //upNotification.getCompleted().autoClear = true;
         upNotification.getError().message = res.getString(R.string.not_up_error);
-        upNotification.getProgress().message = res.getString(R.string.not_up_progress)+ " (" +Placeholders.PROGRESS + ")";
-        upNotification.getCancelled().message = "Cancelado";
+        upNotification.getProgress().message = res.getString(R.string.not_up_progress) + " (" + Placeholders.PROGRESS + ")";
+        upNotification.getCancelled().message = res.getString(R.string.not_up_canceled);
 
         Log.i("upload", "subir: notificacion creada");
         try {
 
             final String uploadId = UUID.randomUUID().toString();
-            Log.i("upload", "subir: inicio try UUID"+uploadId);
+            Log.i("upload", "subir: inicio try UUID" + uploadId);
             new MultipartUploadRequest(context, uploadId, Constant.getUrlUser(usuario.getNombreusuario()))
                     .addFileToUpload(uriFile, "presentacion", filename)
                     .setNotificationConfig(upNotification)
@@ -101,13 +101,11 @@ public class UploadFile {
                     .setDelegate(new UploadStatusDelegate() {
                         @Override
                         public void onProgress(Context context, UploadInfo uploadInfo) {
-                            //messageText.setText(uploadInfo.getProgressPercent()+" % upload");
                         }
+
                         @Override
                         public void onError(Context context, UploadInfo uploadInfo, ServerResponse serverResponse, Exception e) {
-                            //messageText.setTextColor(Color.RED);
-                            //messageText.setText("Error: "+e.getMessage());
-                            Log.e("UploadFile", "onError: " + uploadId + "\nResponse code: "+serverResponse.getHttpCode());
+                            Log.e("UploadFile", "onError: " + uploadId + "\nResponse code: " + serverResponse.getHttpCode());
                             int codigoResp = serverResponse.getHttpCode();
                             String mensaje = "";
                             switch (codigoResp) {
@@ -130,29 +128,27 @@ public class UploadFile {
                                     mensaje = "Se ha producido un error";
                                     break;
                             }
-                            Toast.makeText(context,mensaje,Toast.LENGTH_SHORT).show();
+                            Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show();
                         }
+
                         @Override
                         public void onCompleted(Context context, UploadInfo uploadInfo, ServerResponse serverResponse) {
                             int codigoResp = serverResponse.getHttpCode();
                             if (codigoResp == 200) {
-                                Toast.makeText(context,"Presentación subida correctamente.", Toast.LENGTH_SHORT).show();
+                                Toast.makeText(context, "Presentación subida correctamente.", Toast.LENGTH_SHORT).show();
                             }
-                            Log.i("UploadFile", "Subida Completada: "+uploadId + "Respuesta: "+ codigoResp);
+                            Log.i("UploadFile", "Subida Completada: " + uploadId + "Respuesta: " + codigoResp);
                         }
+
                         @Override
                         public void onCancelled(Context context, UploadInfo uploadInfo) {
-                            //messageText.setTextColor(Color.RED);
-                            //messageText.setText("Subida cancelada!");
-                            Log.i("UploadFile", "Subida cancelada: "+uploadId);
+                            Log.i("UploadFile", "Subida cancelada: " + uploadId);
                         }
                     })
                     .startUpload();
             Log.i("upload", "subir: antes del catch");
         } catch (Exception exc) {
-            Log.e("UploadFile", exc.getMessage()+" "+exc.getLocalizedMessage());
-            /*messageText.setTextColor(Color.RED);
-            messageText.setText("Exception General: "+exc.getLocalizedMessage());*/
+            Log.e("UploadFile", exc.getMessage() + " " + exc.getLocalizedMessage());
         }
     }
 }

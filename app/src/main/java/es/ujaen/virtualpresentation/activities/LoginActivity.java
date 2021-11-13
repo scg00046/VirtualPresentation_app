@@ -18,11 +18,11 @@ import android.widget.Toast;
 
 import es.ujaen.virtualpresentation.R;
 import es.ujaen.virtualpresentation.connection.Connection;
-import es.ujaen.virtualpresentation.data.Preferences;
 import es.ujaen.virtualpresentation.data.User;
 
 /**
  * Activity de autenticación de usuario
+ *
  * @author Sergio Caballero Garrido
  */
 public class LoginActivity extends AppCompatActivity {
@@ -123,7 +123,7 @@ public class LoginActivity extends AppCompatActivity {
                                 String pass = reg_pass.getText().toString().trim();
                                 String mail = reg_email.getText().toString().trim();
 
-                                if (nick.length()>=2 && pass.length()>=2 && nombre.length() >= 2) {
+                                if (nick.length() >= 2 && pass.length() >= 2 && nombre.length() >= 2) {
                                     loading.show();//muestra spinner de carga
                                     User u = new User(nick, nombre, apell);
                                     conn.createUser(u, pass, mail); //Registra el usuario
@@ -154,7 +154,7 @@ public class LoginActivity extends AppCompatActivity {
     /**
      * Detiene el spinner de espera
      */
-    public static void stopLoading(){
+    public static void stopLoading() {
         if (loading != null) {
             loading.dismiss();
         }
@@ -162,6 +162,7 @@ public class LoginActivity extends AppCompatActivity {
 
     /**
      * Autocompleta el campo de usuario para autenticarse después del registro
+     *
      * @param username
      */
     public static void setUser(String username) {

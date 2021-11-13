@@ -12,6 +12,7 @@ import java.util.List;
 
 /**
  * Clase usuario, parámetros del usuario que ha accedido a la aplicación
+ *
  * @author Sergio Caballero Garrido
  */
 public class User {
@@ -28,6 +29,7 @@ public class User {
 
     /**
      * Constructor con parámetros
+     *
      * @param id
      * @param nombreusuario
      * @param nombre
@@ -45,10 +47,11 @@ public class User {
 
     /**
      * Constructor User a partir de un JSON recibido
+     *
      * @param userJson
      * @throws JSONException
      */
-    public User(JSONObject userJson) throws JSONException{
+    public User(JSONObject userJson) throws JSONException {
         this.id = userJson.getInt("id");
         this.nombreusuario = userJson.getString("nombreusuario");
         this.nombre = userJson.getString("nombre");
@@ -91,7 +94,7 @@ public class User {
         return listaPresentacionesString;
     }
 
-    public void addPresentation(int id, String nombre){
+    public void addPresentation(int id, String nombre) {
         this.listaPresentacionesString.add(nombre);
     }
 
@@ -99,23 +102,23 @@ public class User {
         return token;
     }
 
-    public void presentationsJSONtoList(JSONArray array) throws JSONException{
-        Log.i("Usuario_Json","Iniciando conversión");
-            for (int i = 0; i < array.length(); i++){
-                JSONObject pres = array.getJSONObject(i);
-                int id = pres.getInt("idpresentacion");
-                String nombrePresentacion = pres.getString("presentacion");
-                Presentations presentacion = new Presentations(id, nombrePresentacion,
-                        pres.getInt("paginas") );
-                Log.i("Usuario_Json",id+"-"+nombrePresentacion);
-                this.listaPresentaciones.add(presentacion);
-                this.listaPresentacionesString.add(nombrePresentacion);
-            }
+    public void presentationsJSONtoList(JSONArray array) throws JSONException {
+        Log.i("Usuario_Json", "Iniciando conversión");
+        for (int i = 0; i < array.length(); i++) {
+            JSONObject pres = array.getJSONObject(i);
+            int id = pres.getInt("idpresentacion");
+            String nombrePresentacion = pres.getString("presentacion");
+            Presentations presentacion = new Presentations(id, nombrePresentacion,
+                    pres.getInt("paginas"));
+            Log.i("Usuario_Json", id + "-" + nombrePresentacion);
+            this.listaPresentaciones.add(presentacion);
+            this.listaPresentacionesString.add(nombrePresentacion);
+        }
     }
 
-    public Presentations getPresentationByName (String presentacion){
-        for (int i = 0; i< listaPresentaciones.size(); i++){
-            if (listaPresentaciones.get(i).getPresentacion().equals(presentacion)){
+    public Presentations getPresentationByName(String presentacion) {
+        for (int i = 0; i < listaPresentaciones.size(); i++) {
+            if (listaPresentaciones.get(i).getPresentacion().equals(presentacion)) {
                 return listaPresentaciones.get(i);
             }
         }

@@ -74,4 +74,5 @@
     <string name="present_edit_note">Note ...</string>
     <string name="present_edit_url">URL ...</string>
     <string name="load_conecting">Conecting ...</string>
+    <string name="not_up_canceled">Upload canceled</string>
 </resources>

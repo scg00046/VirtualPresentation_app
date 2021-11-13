@@ -6,9 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Resources;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -75,15 +73,6 @@ public class MainActivity extends AppCompatActivity {
 
         DrawerLayout drawer = findViewById(R.id.drawer_layout);
         NavigationView navigationView = findViewById(R.id.nav_view);
-
-        /*List<String> defSpinner = new ArrayList<>();
-        defSpinner.add("No hay presentaciones para " + usuario);
-        Spinner presList = findViewById(R.id.presentationList);
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this,
-                android.R.layout.simple_spinner_dropdown_item,
-                Collections.unmodifiableList(defSpinner));
-        presList.setAdapter(adapter);
-        presList.setClickable(false);*/
 
         View navView = navigationView.getHeaderView(0);
         TextView textNombre = (TextView) navView.findViewById(R.id.nav_user_name);
